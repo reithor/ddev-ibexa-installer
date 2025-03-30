@@ -1,0 +1,167 @@
+#!/bin/bash
+
+## #ddev-generated
+## Description: Runs interactive installer for Ibexa DXP
+## Usage: ibexa-installer
+## Example: ddev ibexa-installer
+
+source .ddev/commands/host/.utils
+
+if [ -f "$IBEXA_DXP_INSTALLED_LOCK_FILE" ] || [ ! -f "$INSTANCE_SETTINGS_FILE" ]
+then
+  # Nothing to do
+  echo "Nothing to do $IBEXA_DXP_INSTALLED_LOCK_FILE"
+  exit 0
+fi
+
+source "$INSTANCE_SETTINGS_FILE"
+
+#
+# Default settings
+#
+
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=publish
+
+#
+# Main
+#
+
+function composer_auth_error() {
+    echo "❗️ Cannot access `(faint updates.ibexa.co)`"
+    echo "Please provide your composer auth details to ddev and re-run `(faint "ddev start")`. The process will continue using previously configured settings."
+    exit 1
+}
+
+if [ "$VERBOSE_INSTALL" == false ]; then
+    clear
+fi
+
+# Workaround to the issue on Mac OS
+git config --global --add safe.directory /var/www/html
+
+banner "Interactive Installation Tool"
+
+echo "🚀 Product to be installed: `(bold "$PRODUCT_TYPE v$PRODUCT_VERSION")`"
+
+# Configure updates.ibexa.co composer repository, check availability (composer auth file could not be linked to ddev)
+if [ "$DXP_EDITION" != "oss" ]; then
+    trap 'composer_auth_error' ERR
+    execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" ddev composer require "ibexa/$DXP_EDITION:$PRODUCT_VERSION" -W --no-scripts --no-plugins --no-install --no-interaction --quiet
+    trap 'error_handler' ERR
+    echo "✅ Repository `(bold updates.ibexa.co)` is reachable"
+fi
+
+# PHP 8.x requires custom error handler to suppress deprecation warnings, it's already added to edition skeletons
+#if [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
+    # composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
+#fi
+
+# Installation steps between website-skeleton and edition skeletons are different
+if [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
+    ddev composer create ibexa/website-skeleton:$PRODUCT_VERSION
+    ddev composer config repositories.ibexa composer https://updates.ibexa.co
+    ddev composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-interaction
+    git init; git add . > /dev/null; git commit -m "Installed Ibexa DXP" > /dev/null;
+    ddev composer recipes:install ibexa/$DXP_EDITION --force --reset # --no-interaction
+    git add . > /dev/null; git commit -m "recipes:install" > /dev/null;
+    ddev composer run post-install-cmd
+else
+    ddev composer create -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
+    echo ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION
+    if [[ "$PHP_VERSION" = "8.3" && "$PRODUCT_VERSION" =~ .*"4.6".*  ]]
+      then
+        ddev composer install
+      else
+        ddev composer update
+    fi
+    echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
+    execute_with_spinner "Initializing git repository..." git init > /dev/null && git add . > /dev/null && git commit -m "Installed Ibexa DXP" > /dev/null
+    echo "✅ Initialized git repository"
+fi
+
+# Install test fixtures
+if [ "$INSTALL_SAMPLE_DATA" == true ]; then
+    composer show --available ibexa/test-fixtures > /dev/null 2>&1
+
+    if [ "$?" == 0 ]; then
+        ddev composer require ibexa/test-fixtures --no-scripts --no-interaction
+        echo "✅ Installed ibexa/test-fixtures package"
+    else
+        echo "⚠️ `(bold "ibexa/test-fixtures")` package is unavailable. Cannot install sample data."
+    fi
+
+fi
+
+# Install profiler
+if [ "$INSTALL_PROFILER" == true ]; then
+    ddev composer require symfony/profiler-pack --no-scripts --no-interaction
+    echo "✅ Installed Symfony Profiler"
+fi
+
+ddev composer run post-update-cmd
+echo "✅ Scripts finished successfully"
+
+ddev ibexa-setup
+
+
+if [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
+    ddev php bin/console ibexa:install --no-debug --skip-indexing
+    ddev php bin/console cache:clear
+    ddev php bin/console ibexa:reindex
+
+else
+    ddev php bin/console ibexa:install --no-debug
+fi
+
+echo "✅ Database installed"
+
+if [ "$SEARCH_ENGINE" == "solr" ] || [ "$SEARCH_ENGINE" == "elasticsearch" ]; then
+    if [ "$SEARCH_ENGINE" = "elasticsearch" ]; then
+        ddev php bin/console ibexa:elasticsearch:put-index-template
+        echo "✅ Put Elasticsearch index template"
+    fi
+
+    ddev php bin/console ibexa:reindex
+    echo "✅ Reindexed search data"
+fi
+
+# Setup sample data
+if [ "$INSTALL_SAMPLE_DATA" == true ]; then
+    ddev php bin/console ibexa:test-fixtures:setup
+    echo "✅ Installed sample data"
+fi
+
+ddev php bin/console ibexa:graphql:generate-schema
+echo "✅ GraphQL schema generated"
+
+# Setup Ibexa Cloud
+if [ "$INSTALL_CLOUD_CONFIG" == true ]; then
+    ddev composer ibexa:setup --platformsh
+    echo "✅ Installed Ibexa Cloud configuration"
+fi
+
+echo "✅ All done! You can now access your new project using provided details:"
+
+ddev gum style --border double --margin "1 1" --padding "1 1" --width 60 \
+    "Website:        ` bold --bold "$DDEV_PRIMARY_URL" `" \
+    "Backoffice:     ` bold --bold "$DDEV_PRIMARY_URL/admin" `" \
+    "" \
+    "Username:       ` bold "admin" `" \
+    "Password:       ` bold "publish" `" \
+    "" \
+    "Run `(bold "ddev describe")` for more details"
+
+echo "📧  Run `(bold "ddev mailpit")` to launch Mailpit interface and see caught e-mails"
+echo "🗄️   Run `(bold "ddev get ddev/ddev-phpmyadmin")` to install PHPMyAdmin"
+echo "🗄️   Run `(bold "ddev querious|sequelace|tableplus|dbeaver")` to launch database client app"
+echo ""
+echo "📦️  Run `(bold "ddev composer ...")` to execute Composer commands"
+echo "🐘️  Run `(bold "ddev php ...")` to execute PHP scripts"
+echo "🐞️  Run `(bold "ddev xdebug on|off")` to control Xdebug"
+echo ""
+echo "🚀️  Run `(bold "ddev start")` to start containers"
+echo "⛔️  Run `(bold "ddev stop")` to stop containers"
+echo "🔄️  Run `(bold "ddev restart")` to restart containers"
+
+echo "`date`" > ./.ddev/.ibexa-dxp-installed

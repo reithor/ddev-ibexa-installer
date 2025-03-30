@@ -1,0 +1,3 @@
+hooks:
+  post-start:
+    - exec-host: "if [[ ! -f composer.json ]];then ddev ibexa-configurator && ddev ibexa-installer; fi;"

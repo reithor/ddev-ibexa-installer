@@ -1,0 +1,62 @@
+#!/bin/bash
+
+export IBEXA_DXP_INSTALLED_LOCK_FILE=".ddev/.ibexa-dxp-installed"
+export INSTANCE_SETTINGS_FILE=".ddev/.ibexa-instance-settings"
+
+function verbose_output() {
+    if [ "$VERBOSE_INSTALL" = true ]; then
+        "$@"
+    else
+        "$@" > /dev/null
+    fi
+}
+
+function execute_with_spinner() {
+    TITLE="$1"
+    shift
+
+    if [ "$VERBOSE_INSTALL" = true ]; then
+        "$@"
+    else
+        ddev gum spin --title "$TITLE" --timeout 0 -- "$@"
+    fi
+}
+
+function bold() {
+    ddev gum style --bold "$@"
+}
+
+function banner() {
+    ddev gum style \
+        --foreground "#FF4713" \
+        --align center --width 90 \
+        "" \
+        "#%%*     =#                                                                     " \
+        "%%%+   -#%%                                                                     " \
+        "%#-    #%%%                                                                     " \
+        ".  .   #%%%    ....                  ...                 .....       ...        " \
+        " :**   #%%%:+#%%%%%%#+:          -+#%%%%%#+-           -#%%%*.  :=*%%%%%%#+-    " \
+        "+%%*   #%%%%%%#*+++#%%%#-      +%%%%#+++*%%%%+.      :#%%%*:  :*%%%%**+*#%%%%=  " \
+        "%%%*   #%%%%+.      .=%%%*   .#%%#=     .+%%%*..:  -#%%%+:   =%%%*:      .+%%%# " \
+        "%%%*   #%%%-          :%%%=  *%%%.    .+%%%*:.*%%*#%%%*.    :%%%=          :%%%+" \
+        "%%%*   #%%%            #%%*  %%%+   .+%%%*:   -%%%%%#:      +%%%            *%%%" \
+        "%%%*   +%%%.           %%%+  #%%# .+%%%*:    -#%%%%%%*:     =%%%.           #%%%" \
+        "%%%*   .%%%#:        .#%%#.  -%%%*%%%*-    -#%%%*:-*%%%*:    #%%#:        .*%%%%" \
+        "%%%*    :#%%%*=::.:=*%%%#.    -%%%%%*:.:-+%%%%*.    :*%%%*:   *%%%*-:...-+%%%%%%" \
+        "%%%*      -*%%%%%%%%%%*-       .=#%%%%%%%%%#+.        -#%%%*:  :*%%%%%%%%%%##%%=" \
+        ""
+
+    ddev gum style \
+        --foreground "#FFFFFF" --faint --align center --width 90 \
+        "~==[ $1 ]==~" \
+        ""
+}
+
+function error_handler() {
+    echo ""
+    echo "❌️  An error occurred. Exiting..."
+    exit 1
+}
+
+# Set custom error handler
+trap 'error_handler' ERR
