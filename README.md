@@ -10,11 +10,17 @@
 
 ## Getting started
 
+Clone this repo locally, eg:
+```
+git clone git@github.com:reithor/ddev-ibexa-installer.git ~/ddev-ibexa-installer
+```
+
+When this is done, you can create new projects :
 ```
 mkdir my_new_project
 cd my_new_project
 ddev config --project-type=php
-ddev add-on get reithor/ddev-ibexa-installer
+ddev add-on get ~/ddev-ibexa-installer
 ddev start
 ```
 
