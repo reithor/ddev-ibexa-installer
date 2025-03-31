@@ -105,7 +105,7 @@ function configure_release() {
     
     if [[ "$SELECT" =~ .*"x release" ]]; then
         PRODUCT_VERSION=$SELECT
-        PRODUCT_VERSION="~${SELECT/x release/}"
+        PRODUCT_VERSION="${SELECT/x release/}"
         PRODUCT_VERSION=$(gum input --value=$PRODUCT_VERSION --prompt="Please provide minor release >  ")
     else
         case "$SELECT" in
