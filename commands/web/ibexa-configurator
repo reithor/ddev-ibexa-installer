@@ -25,7 +25,7 @@ IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 [ -z "$SEARCH_ENGINE" ] && SEARCH_ENGINE="legacy"
 [ -z "$INSTALL_SAMPLE_DATA" ] && INSTALL_SAMPLE_DATA=false
 [ -z "$INSTALL_PROFILER" ] && INSTALL_PROFILER=true
-[ -z "$APP_ENV" ] && APP_ENV="prod"
+[ -z "$APP_ENV" ] && APP_ENV="dev"
 [ -z "$INSTALL_CLOUD_CONFIG" ] && INSTALL_CLOUD_CONFIG=true
 
 if [ -f "$INSTANCE_SETTINGS_FILE" ]; then
@@ -171,13 +171,13 @@ function configure_http_server() {
 }
 
 function configure_http_cache() {
-    choose "`(faint "[Setup]")` `(bold "Select HTTP cache")`" "Varnish (recommended)" "Symfony"
+    choose "`(faint "[Setup]")` `(bold "Select HTTP cache")`" "Symfony" "Varnish (recommended)"
     case "$SELECT" in
-        "Varnish (recommended)")
-            HTTP_CACHE="varnish"
-            ;;
         "Symfony")
             HTTP_CACHE="symfony"
+            ;;
+        "Varnish (recommended)")
+            HTTP_CACHE="varnish"
             ;;
     esac
 }
@@ -255,31 +255,31 @@ function configure_app_cache() {
 }
 
 function configure_search_engine() {
-    choose "`(faint "[Setup]")` `(bold "Select search engine")`" "Elasticsearch (recommended)" "Solr" "Legacy"
+    choose "`(faint "[Setup]")` `(bold "Select search engine")`" "Legacy" "Elasticsearch (recommended)" "Solr"
     case "$SELECT" in
+        "Legacy")
+            SEARCH_ENGINE="legacy"
+            ;;
         "Elasticsearch (recommended)")
             SEARCH_ENGINE="elasticsearch"
             ;;
         "Solr")
             SEARCH_ENGINE="solr"
             ;;
-        "Legacy")
-            SEARCH_ENGINE="legacy"
-            ;;
     esac
 }
 
 function configure_sample_data() {
     if [ "$DXP_EDITION" != "oss" ]; then
-        choose "`(faint "[Instance]")` `(bold "Install sample data?")`" "Yes (recommended)" "No"
+        choose "`(faint "[Instance]")` `(bold "Install sample data?")`" "No" "Yes"
         case "$SELECT" in
-            "Yes (recommended)")
-                INSTALL_SAMPLE_DATA=true
-                LABEL_INSTALL_SAMPLE_DATA="Yes"
-                ;;
             "No")
                 INSTALL_SAMPLE_DATA=false
                 LABEL_INSTALL_SAMPLE_DATA="No"
+                ;;
+            "Yes")
+                INSTALL_SAMPLE_DATA=true
+                LABEL_INSTALL_SAMPLE_DATA="Yes"
                 ;;
         esac
     else
@@ -290,15 +290,15 @@ function configure_sample_data() {
 }
 
 function configure_profiler() {
-    choose "`(faint "[Instance]")` `(bold "Install Symfony profiler?")`" "No (recommended)" "Yes"
+    choose "`(faint "[Instance]")` `(bold "Install Symfony profiler?")`" "Yes" "No"
     case "$SELECT" in
-        "No (recommended)")
-            INSTALL_PROFILER=false
-            LABEL_INSTALL_PROFILER="No"
-            ;;
         "Yes")
             INSTALL_PROFILER=true
             LABEL_INSTALL_PROFILER="Yes"
+            ;;
+        "No")
+            INSTALL_PROFILER=false
+            LABEL_INSTALL_PROFILER="No"
             ;;
     esac
 }

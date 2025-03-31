@@ -52,40 +52,41 @@ if [ "$DXP_EDITION" != "oss" ]; then
     echo "✅ Repository `(bold updates.ibexa.co)` is reachable"
 fi
 
-# PHP 8.x requires custom error handler to suppress deprecation warnings, it's already added to edition skeletons
-#if [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
-    # composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
-#fi
-
 # Installation steps between website-skeleton and edition skeletons are different
 if [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
     ddev composer create ibexa/website-skeleton:$PRODUCT_VERSION
     ddev composer config repositories.ibexa composer https://updates.ibexa.co
-    ddev composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-interaction
-    git init; git add . > /dev/null; git commit -m "Installed Ibexa DXP" > /dev/null;
-    ddev composer recipes:install ibexa/$DXP_EDITION --force --reset # --no-interaction
-    git add . > /dev/null; git commit -m "recipes:install" > /dev/null;
-    ddev composer run post-install-cmd
+    ddev composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
+    execute_with_spinner "Composer require ibexa/${DXP_EDITION}:${PRODUCT_VERSION}" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-interaction
+    execute_with_spinner "Initializing git repository..." git init; git add . ':!.dev' > /dev/null; git commit -m "Installed Ibexa DXP" > /dev/null;
+    echo "✅ Initialized git repository"
+    ddev composer recipes:install ibexa/$DXP_EDITION --force --reset
+    echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
+    execute_with_spinner "Commit recipes" git add . ':!.dev' > /dev/null; git commit -m "recipes:install" > /dev/null;
+    echo "✅ Commit recipes:install"
 else
     ddev composer create -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
-    echo ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION
-    if [[ "$PHP_VERSION" = "8.3" && "$PRODUCT_VERSION" =~ .*"4.6".*  ]]
+    if [[ "$PHP_VERSION" = "8.3" && "$PRODUCT_VERSION" = *"4.6"*  ]]
       then
-        ddev composer install
+        execute_with_spinner "Running Composer [install]" composer install
       else
-        ddev composer update
+        execute_with_spinner "Running Composer [update]" composer update
     fi
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
-    execute_with_spinner "Initializing git repository..." git init > /dev/null && git add . > /dev/null && git commit -m "Installed Ibexa DXP" > /dev/null
+    execute_with_spinner "Initializing git repository..." git init > /dev/null && git add . ':!.dev' > /dev/null && git commit -m "Installed Ibexa DXP" > /dev/null
     echo "✅ Initialized git repository"
 fi
 
 # Install test fixtures
-if [ "$INSTALL_SAMPLE_DATA" == true ]; then
-    composer show --available ibexa/test-fixtures > /dev/null 2>&1
-
+if [[ "$INSTALL_SAMPLE_DATA" == true && "$PRODUCT_VERSION" != *"3.3"* ]]; then
+    if [[ "$PRODUCT_VERSION" = *"4.6"* ]]; then
+        FIXTURES_VERSION=~4.6.x-dev
+    else
+        FIXTURES_VERSION=~5.0.x-dev
+    fi
+    
     if [ "$?" == 0 ]; then
-        ddev composer require ibexa/test-fixtures --no-scripts --no-interaction
+        execute_with_spinner "Require [ibexa/test-fixtures]" composer require ibexa/test-fixtures:$FIXTURES_VERSION --no-scripts --no-interaction
         echo "✅ Installed ibexa/test-fixtures package"
     else
         echo "⚠️ `(bold "ibexa/test-fixtures")` package is unavailable. Cannot install sample data."
@@ -95,49 +96,49 @@ fi
 
 # Install profiler
 if [ "$INSTALL_PROFILER" == true ]; then
-    ddev composer require symfony/profiler-pack --no-scripts --no-interaction
+    execute_with_spinner "Require [symfony/profiler-pack]" composer require symfony/profiler-pack --no-scripts --no-interaction
     echo "✅ Installed Symfony Profiler"
 fi
 
-ddev composer run post-update-cmd
+ddev ibexa-setup
+execute_with_spinner "Composer [post-update-cmd]" composer run post-update-cmd
 echo "✅ Scripts finished successfully"
 
-ddev ibexa-setup
-
-
 if [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
-    ddev php bin/console ibexa:install --no-debug --skip-indexing
+    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing
     ddev php bin/console cache:clear
-    ddev php bin/console ibexa:reindex
-
 else
-    ddev php bin/console ibexa:install --no-debug
+    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing
 fi
-
 echo "✅ Database installed"
 
-if [ "$SEARCH_ENGINE" == "solr" ] || [ "$SEARCH_ENGINE" == "elasticsearch" ]; then
-    if [ "$SEARCH_ENGINE" = "elasticsearch" ]; then
-        ddev php bin/console ibexa:elasticsearch:put-index-template
-        echo "✅ Put Elasticsearch index template"
-    fi
-
-    ddev php bin/console ibexa:reindex
-    echo "✅ Reindexed search data"
+if [ "$SEARCH_ENGINE" = "elasticsearch" ]; then
+    ddev php bin/console ibexa:elasticsearch:put-index-template
+    echo "✅ Put Elasticsearch index template"
 fi
+
+execute_with_spinner "Reindex [ibexa:reindex]" php bin/console ibexa:reindex
+echo "✅ Reindexed search data"
+
+
+function sample_data_error() {
+    echo "❗️ Error while creating sampla data ❗️"
+}
 
 # Setup sample data
 if [ "$INSTALL_SAMPLE_DATA" == true ]; then
-    ddev php bin/console ibexa:test-fixtures:setup
+    trap 'sample_data_error' ERR
+    execute_with_spinner " [ibexa:test-fixtures:setup]" php bin/console ibexa:test-fixtures:setup --quiet
+    trap 'error_handler' ERR
     echo "✅ Installed sample data"
 fi
 
-ddev php bin/console ibexa:graphql:generate-schema
+execute_with_spinner "Generate GraphQL schema [ibexa:graphql:generate-schema]" php bin/console ibexa:graphql:generate-schema
 echo "✅ GraphQL schema generated"
 
 # Setup Ibexa Cloud
 if [ "$INSTALL_CLOUD_CONFIG" == true ]; then
-    ddev composer ibexa:setup --platformsh
+    execute_with_spinner "Setup Ibexa Cloud [ibexa:setup --platformsh]" composer ibexa:setup --platformsh
     echo "✅ Installed Ibexa Cloud configuration"
 fi
 
