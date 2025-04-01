@@ -1,12 +1,12 @@
 name: tests
 on:
-  pull_request:
-  push:
-    branches: [ main ]
-
-  schedule:
-  - cron: '25 08 * * *'
-
+  # pull_request:
+  # push:
+  #   branches: [ main ]
+  #
+  # schedule:
+  # - cron: '25 08 * * *'
+  #
   workflow_dispatch:
     inputs:
       debug_enabled:
