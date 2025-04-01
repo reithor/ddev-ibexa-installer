@@ -16,7 +16,7 @@ function execute_with_spinner() {
     shift
 
     if [ "$VERBOSE_INSTALL" = true ]; then
-        ddev "$@"
+        ddev exec "$@"
     else
         ddev gum spin --title "$TITLE" --timeout 0s -- "$@"
     fi

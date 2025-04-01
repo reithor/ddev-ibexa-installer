@@ -38,7 +38,7 @@ if [ "$VERBOSE_INSTALL" == false ]; then
 fi
 
 # Workaround to the issue on Mac OS
-git config --global --add safe.directory /var/www/html
+ddev exec git config --global --add safe.directory /var/www/html
 
 banner "Interactive Installation Tool"
 
@@ -58,11 +58,14 @@ if [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
     ddev composer config repositories.ibexa composer https://updates.ibexa.co
     ddev composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
     execute_with_spinner "Composer require ibexa/${DXP_EDITION}:${PRODUCT_VERSION}" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-interaction
-    execute_with_spinner "Initializing git repository..." git init; git add . ':!.dev' > /dev/null; git commit -m "Installed Ibexa DXP" > /dev/null;
+    
+    git init; git add . ':!.dev' > /dev/null; git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
+    
     ddev composer recipes:install ibexa/$DXP_EDITION --force --reset
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
-    execute_with_spinner "Commit recipes" git add . ':!.dev' > /dev/null; git commit -m "recipes:install" > /dev/null;
+    
+    git add . ':!.dev' > /dev/null; git commit -m "recipes:install" > /dev/null;
     echo "✅ Commit recipes:install"
 else
     ddev composer create -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
@@ -73,7 +76,7 @@ else
         execute_with_spinner "Running Composer [update]" composer update
     fi
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
-    execute_with_spinner "Initializing git repository..." git init > /dev/null && git add . ':!.dev' > /dev/null && git commit -m "Installed Ibexa DXP" > /dev/null
+    git init > /dev/null && git add . ':!.dev' > /dev/null && git commit -m "Installed Ibexa DXP" > /dev/null
     echo "✅ Initialized git repository"
 fi
 
