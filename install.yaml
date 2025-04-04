@@ -60,6 +60,7 @@ pre_install_actions:
 # by this add-on, or removal could remove things that are not owned by it
 project_files:
   - config.gum.yaml
+  - config.db.yaml
   - web-build/pre.Dockerfile.gum
   - commands/
   - config.installer.yaml

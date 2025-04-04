@@ -1,0 +1,10 @@
+#!/bin/bash
+
+ddev config --project-type=php
+ddev add-on get ~/ddev-ibexa-installer
+
+if [[ ! -f composer.json ]];then
+    ddev ibexa-configurator
+    ddev ibexa-setup
+    ddev ibexa-installer
+fi
