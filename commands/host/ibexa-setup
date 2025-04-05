@@ -23,7 +23,13 @@ fi
 
 source $SETTINGS_FILE
 
+YAML_TAB="    "
+
 if [ ! -f "$PROVISION_FILE_GENERAL" ]; then
+    echo "# " >> .ddev/config.local.yaml
+    echo "# dxp-installer generated" >> .ddev/config.local.yaml
+    echo "web_environment:" >> .ddev/config.local.yaml
+
     # Project name
     ddev config --project-name="$DDEV_SITENAME"
 
@@ -49,11 +55,11 @@ if [ ! -f "$PROVISION_FILE_GENERAL" ]; then
     echo "👷 Configured Database: $DATABASE:$DATABASE_VERSION"
 
     # App env
-    echo "APP_ENV=$APP_ENV" >> .env.local
+    echo "${YAML_TAB}- APP_ENV=$APP_ENV" >> .ddev/config.local.yaml
     if [ "$APP_ENV" = "prod" ]; then
-        echo "APP_DEBUG=0" >> .env.local
+        echo "${YAML_TAB}- APP_DEBUG=0" >> .ddev/config.local.yaml
     else
-        echo "APP_DEBUG=1" >> .env.local
+        echo "${YAML_TAB}- APP_DEBUG=1" >> .ddev/config.local.yaml
     fi
     echo "👷 Configured app environment: $APP_ENV"
 
@@ -89,45 +95,45 @@ if [ "$DATABASE" == "postgres" ]; then
     DB_COLLATION=utf8_unicode_ci
 fi
 
-echo "# " >> .env.local
-echo "# dxp-installer generated" >> .env.local
-echo "DATABASE_URL=${DB_SCHEME}://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?serverVersion=${DB_VERSION}&charset=${DB_CHARSET}" >> .env.local
-echo "DATABASE_VERSION=${DB_VERSION}" >> .env.local
-echo "DATABASE_CHARSET=${DB_CHARSET}" >> .env.local
-echo "DATABASE_COLLATION=${DB_COLLATION}" >> .env.local
+echo "# " >> .ddev/config.local.yaml
+echo "# dxp-installer generated" >> .ddev/config.local.yaml
+echo "${YAML_TAB}- DATABASE_URL=${DB_SCHEME}://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?serverVersion=${DB_VERSION}&charset=${DB_CHARSET}" >> .ddev/config.local.yaml
+echo "${YAML_TAB}- DATABASE_VERSION=${DB_VERSION}" >> .ddev/config.local.yaml
+echo "${YAML_TAB}- DATABASE_CHARSET=${DB_CHARSET}" >> .ddev/config.local.yaml
+echo "${YAML_TAB}- DATABASE_COLLATION=${DB_COLLATION}" >> .ddev/config.local.yaml
 
-echo "👷 Saved database details in .env.local"
+echo "👷 Saved database details in .ddev/config.local.yaml"
 
 if [ "$HTTP_CACHE" == "varnish" ]; then
-   echo "# " >> .env.local
-   echo "# dxp-installer generated" >> .env.local
-   echo "TRUSTED_PROXIES=REMOTE_ADDR" >> .env.local
-   echo "HTTPCACHE_PURGE_TYPE=varnish" >> .env.local
-   echo "HTTPCACHE_PURGE_SERVER=$DDEV_PRIMARY_URL" >> .env.local
+   echo "# " >> .ddev/config.local.yaml
+   echo "# dxp-installer generated" >> .ddev/config.local.yaml
+   echo "${YAML_TAB}- TRUSTED_PROXIES=REMOTE_ADDR" >> .ddev/config.local.yaml
+   echo "${YAML_TAB}- HTTPCACHE_PURGE_TYPE=varnish" >> .ddev/config.local.yaml
+   echo "${YAML_TAB}- HTTPCACHE_PURGE_SERVER=$DDEV_PRIMARY_URL" >> .ddev/config.local.yaml
 
-   verbose_output ddev get reithor/ddev-varnish
+   verbose_output ddev add-on  get ~/ddev-varnish
 fi
 
 echo "👷 Configured HTTP cache: $HTTP_CACHE"
 
 # Memcached
 if [ "$APP_CACHE" == "memcached" ]; then
-    echo "# " >> .env.local
-    echo "# dxp-installer generated" >> .env.local
-    echo "CACHE_POOL=\"cache.memcached\"" >> .env.local
-    echo "CACHE_DSN=\"memcached:11211?weight=33\"" >> .env.local
+    echo "# " >> .ddev/config.local.yaml
+    echo "# dxp-installer generated" >> .ddev/config.local.yaml
+    echo "${YAML_TAB}- CACHE_POOL=\"cache.memcached\"" >> .ddev/config.local.yaml
+    echo "${YAML_TAB}- CACHE_DSN=\"memcached:11211?weight=33\"" >> .ddev/config.local.yaml
 
-    verbose_output ddev get ddev/ddev-memcached
+    verbose_output ddev add-on  get ddev/ddev-memcached
 fi
 
 # Redis
 if [ "$APP_CACHE" == "redis" ]; then
-    echo "# " >> .env.local
-    echo "# dxp-installer generated" >> .env.local
-    echo "CACHE_POOL=cache.redis" >> .env.local
-    echo "CACHE_DSN=redis@redis:6379" >> .env.local
+    echo "# " >> .ddev/config.local.yaml
+    echo "# dxp-installer generated" >> .ddev/config.local.yaml
+    echo "${YAML_TAB}- CACHE_POOL=cache.redis" >> .ddev/config.local.yaml
+    echo "${YAML_TAB}- CACHE_DSN=redis@redis:6379" >> .ddev/config.local.yaml
 
-    verbose_output ddev get ddev/ddev-redis-7
+    verbose_output ddev add-on  get ddev/ddev-redis-7
 
     echo "# " >> .ddev/redis/memory.conf
     echo "# dxp-installer generated" >> .ddev/redis/memory.conf
@@ -138,23 +144,23 @@ echo "👷 Configured app cache: $APP_CACHE"
 
 # Solr
 if [ "$SEARCH_ENGINE" == "solr" ]; then
-    echo "# " >> .env.local
-    echo "# dxp-installer generated" >> .env.local
-    echo "SEARCH_ENGINE=solr" >> .env.local
-    echo "SOLR_CORE=collection1" >> .env.local
-    echo "SOLR_DSN=http://solr:8983/solr" >> .env.local
+    echo "# " >> .ddev/config.local.yaml
+    echo "# dxp-installer generated" >> .ddev/config.local.yaml
+    echo "${YAML_TAB}- SEARCH_ENGINE=solr" >> .ddev/config.local.yaml
+    echo "${YAML_TAB}- SOLR_CORE=collection1" >> .ddev/config.local.yaml
+    echo "${YAML_TAB}- SOLR_DSN=http://solr:8983/solr" >> .ddev/config.local.yaml
 
-    verbose_output ddev get ibexa/ddev-solr
+    verbose_output ddev add-on  get ibexa/ddev-solr
 fi
 
 # Elasticsearch
 if [ "$SEARCH_ENGINE" == "elasticsearch" ]; then
-    echo "# " >> .env.local
-    echo "# dxp-installer generated" >> .env.local
-    echo "SEARCH_ENGINE=elasticsearch" >> .env.local
-    echo "ELASTICSEARCH_DSN=http://elasticsearch:9200" >> .env.local
+    echo "# " >> .ddev/config.local.yaml
+    echo "# dxp-installer generated" >> .ddev/config.local.yaml
+    echo "${YAML_TAB}- SEARCH_ENGINE=elasticsearch" >> .ddev/config.local.yaml
+    echo "${YAML_TAB}- ELASTICSEARCH_DSN=http://elasticsearch:9200" >> .ddev/config.local.yaml
 
-    verbose_output ddev get ddev/ddev-elasticsearch
+    verbose_output ddev add-on  get ddev/ddev-elasticsearch
 fi
 
 echo "👷 Configured search engine: $SEARCH_ENGINE"

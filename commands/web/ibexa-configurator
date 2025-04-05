@@ -33,8 +33,29 @@ if [ -f "$INSTANCE_SETTINGS_FILE" ]; then
     exit 0
 fi
 
+function detect_installation() {
+    if [ -f composer.lock ]; then
+        FRESH_INSTALL=false
+        # profiler loaded from composer.json
+        INSTALL_PROFILER=false
+        LABEL_INSTALL_PROFILER="No"
+        # fixtures loaded from composer.json
+        INSTALL_SAMPLE_DATA=false
+        LABEL_INSTALL_SAMPLE_DATA="No"
+        #
+        INSTALL_CLOUD_CONFIG=false
+    else
+        FRESH_INSTALL=true
+    fi
+}
+
 function detect_version() {
-    if [ -f composer.json ]; then
+    if [ "$DXP_EDITION" != "website" ] && [ -f composer.lock ]; then
+          MIN_STABILITY="`(jq -r '."minimum-stability"' composer.lock)`"
+          PRODUCT_VERSION="`(jq -r '.packages[] | select(.name == "ibexa/oss") | .version' composer.lock | sed 's/^v//')`"
+          echo $PRODUCT_VERSION
+          INSTALL_FROM_EDITION_SKELETON=true
+    elif [ -f composer.json ]; then
         MIN_STABILITY="`(jq -r '."minimum-stability"' composer.json)`"
         PRODUCT_VERSION="`(jq -r '.extra."branch-alias"."dev-main"' composer.json)`"
         INSTALL_FROM_EDITION_SKELETON=true
@@ -49,33 +70,43 @@ function detect_version() {
 }
 
 function detect_product() {
-    if [ -f composer.json ]; then
-      PROJECT_NAME=$(jq -r '.name' composer.json)
-      # Strip "ibexa/" and "-skeleton" parts from the value
-      DXP_EDITION=$(echo $PROJECT_NAME | sed 's/ibexa\///;s/-skeleton//')
-      case "$DXP_EDITION" in
-          "commerce")
-              PRODUCT_TYPE="Ibexa DXP Commerce"
-              ;;
-          "experience")
-              PRODUCT_TYPE="Ibexa DXP Experience"
-              ;;
-          "headless")
-              PRODUCT_TYPE="Ibexa DXP Headless"
-              ;;
-          "oss")
-              PRODUCT_TYPE="Ibexa OSS"
-              ;;
-          "content")
-              PRODUCT_TYPE="Ibexa Content (3.3 & <=4.5)"
-              ;;
-      esac
-    else
-      PRODUCT_TYPE="Ibexa DXP Experience"
+    if [ "$FRESH_INSTALL" == true ]; then
+        PRODUCT_TYPE="Ibexa DXP Experience"
+        return
     fi
+
+    PROJECT_NAME=$(jq -r '.name' composer.json)
+    if [ "$PROJECT_NAME" == "ibexa/website-skeleton" ] && \
+       [ "$(jq  -r '.require | to_entries[] | select(.key|startswith("ibexa/"))' composer.json)" != "" ]; then
+        PROJECT_NAME=$(jq  -r '.require | to_entries[] | select(.key|startswith("ibexa")) | .key ' composer.json)
+    fi
+
+    # Strip "ibexa/" and "-skeleton" parts from the value
+    DXP_EDITION=$(echo $PROJECT_NAME | sed 's/ibexa\///;s/-skeleton//')
+    case "$DXP_EDITION" in
+        "commerce")
+            PRODUCT_TYPE="Ibexa DXP Commerce"
+            ;;
+        "experience")
+            PRODUCT_TYPE="Ibexa DXP Experience"
+            ;;
+        "headless")
+            PRODUCT_TYPE="Ibexa DXP Headless"
+            ;;
+        "oss")
+            PRODUCT_TYPE="Ibexa OSS"
+            ;;
+        "content")
+            PRODUCT_TYPE="Ibexa Content (3.3 & <=4.5)"
+            ;;
+    esac
 }
 
 function configure_product() {
+    if [ "$FRESH_INSTALL" == false ]; then
+      return
+    fi
+
     if [ "$DXP_EDITION" = "website" ]; then
         choose "`(faint "[Product]")` `(bold "Select Ibexa product")`" "Ibexa OSS" "Ibexa DXP Headless" "Ibexa DXP Experience" "Ibexa DXP Commerce"
         PRODUCT_TYPE="$SELECT"
@@ -101,8 +132,11 @@ function configure_product() {
 }
 
 function configure_release() {
+    if [ "$FRESH_INSTALL" == false ]; then
+      return
+    fi
+
     choose "`(faint "[Release]")` `(bold "Select Release")`" "4.6 LTS" "4.6.x dev" "5.0.x dev" "3.3 LTS" "3.3.x release" "4.6.x release"
-    
     if [[ "$SELECT" =~ .*"x release" ]]; then
         PRODUCT_VERSION=$SELECT
         PRODUCT_VERSION="${SELECT/x release/}"
@@ -270,6 +304,10 @@ function configure_search_engine() {
 }
 
 function configure_sample_data() {
+    if [ "$FRESH_INSTALL" == false ]; then
+      return
+    fi
+
     if [ "$DXP_EDITION" != "oss" ]; then
         choose "`(faint "[Instance]")` `(bold "Install sample data?")`" "No" "Yes"
         case "$SELECT" in
@@ -290,6 +328,10 @@ function configure_sample_data() {
 }
 
 function configure_profiler() {
+    if [ "$FRESH_INSTALL" == false ]; then
+        return
+    fi
+
     choose "`(faint "[Instance]")` `(bold "Install Symfony profiler?")`" "Yes" "No"
     case "$SELECT" in
         "Yes")
@@ -316,6 +358,10 @@ function configure_app_env() {
 }
 
 function configure_cloud() {
+    if [ "$FRESH_INSTALL" == false ]; then
+        return
+    fi
+
     choose "`(faint "[Instance]")` `(bold "Install Ibexa Cloud configuration?")`" "Yes (recommended)" "No"
     case "$SELECT" in
         "Yes (recommended)")
@@ -421,6 +467,7 @@ function save_settings_file() {
         declare -p HTTP_SERVER
         declare -p INSTALL_CLOUD_CONFIG
         declare -p INSTALL_FROM_EDITION_SKELETON
+        declare -p FRESH_INSTALL
     } > "$INSTANCE_SETTINGS_FILE"
 }
 
@@ -435,6 +482,7 @@ banner "Interactive Installation Tool"
 bold "⚠️  This tool is experimental. Do not use on production servers."
 echo ""
 
+detect_installation
 detect_product
 detect_version
 

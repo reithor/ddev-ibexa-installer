@@ -42,41 +42,55 @@ ddev exec git config --global --add safe.directory /var/www/html
 
 banner "Interactive Installation Tool"
 
-echo "🚀 Product to be installed: `(bold "$PRODUCT_TYPE v$PRODUCT_VERSION")`"
-
-# Configure updates.ibexa.co composer repository, check availability (composer auth file could not be linked to ddev)
-if [ "$DXP_EDITION" != "oss" ]; then
-    trap 'composer_auth_error' ERR
-    execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" ddev composer require "ibexa/$DXP_EDITION:$PRODUCT_VERSION" -W --no-scripts --no-plugins --no-install --no-interaction --quiet
-    trap 'error_handler' ERR
-    echo "✅ Repository `(bold updates.ibexa.co)` is reachable"
-fi
+echo "🚀 Product to be installed: `(bold "$PRODUCT_TYPE $PRODUCT_VERSION")`"
 
 # Installation steps between website-skeleton and edition skeletons are different
-if [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
+if [ "$FRESH_INSTALL" == false ]; then
+    if [ "$APP_ENV" == "dev" ]; then
+      execute_with_spinner "Running Composer [install]" composer install --optimize-autoloader
+    else
+      execute_with_spinner "Running Composer [install]" composer install --no-dev --optimize-autoloader
+    fi
+    echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
+elif [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
     ddev composer create ibexa/website-skeleton:$PRODUCT_VERSION
     ddev composer config repositories.ibexa composer https://updates.ibexa.co
     ddev composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
+
+    if [ "$DXP_EDITION" != "oss" ]; then
+        trap 'composer_auth_error' ERR
+        execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-plugins --no-install --no-interaction --quiet
+        trap 'error_handler' ERR
+        echo "✅ Repository `(bold updates.ibexa.co)` is reachable"
+    fi
     execute_with_spinner "Composer require ibexa/${DXP_EDITION}:${PRODUCT_VERSION}" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-interaction
     
-    git init; git add . ':!.dev' > /dev/null; git commit -m "Installed Ibexa DXP" > /dev/null;
+    ddev exec git init > /dev/null; ddev exec git add . ':!.dev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
     
     ddev composer recipes:install ibexa/$DXP_EDITION --force --reset
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
     
-    git add . ':!.dev' > /dev/null; git commit -m "recipes:install" > /dev/null;
+    ddev exec git add . ':!.dev' > /dev/null; ddev exec git commit -m "recipes:install" > /dev/null;
     echo "✅ Commit recipes:install"
 else
-    ddev composer create -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
+    ddev composer create ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
+    
+    if [ "$DXP_EDITION" != "oss" ]; then
+        trap 'composer_auth_error' ERR
+        execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-plugins --no-install --no-interaction --quiet
+        trap 'error_handler' ERR
+        echo "✅ Repository `(bold updates.ibexa.co)` is reachable"
+    fi
+
     if [[ "$PHP_VERSION" = "8.3" && "$PRODUCT_VERSION" = *"4.6"*  ]]
       then
-        execute_with_spinner "Running Composer [install]" composer install
+        execute_with_spinner "Running Composer [install]" composer install --optimize-autoloader
       else
-        execute_with_spinner "Running Composer [update]" composer update
+        execute_with_spinner "Running Composer [update]" composer update --optimize-autoloader
     fi
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
-    git init > /dev/null && git add . ':!.dev' > /dev/null && git commit -m "Installed Ibexa DXP" > /dev/null
+    ddev exec git init > /dev/null; ddev exec git add . ':!.dev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
 fi
 
@@ -103,7 +117,6 @@ if [ "$INSTALL_PROFILER" == true ]; then
     echo "✅ Installed Symfony Profiler"
 fi
 
-ddev ibexa-setup
 execute_with_spinner "Composer [post-update-cmd]" composer run post-update-cmd
 echo "✅ Scripts finished successfully"
 
@@ -157,7 +170,7 @@ ddev gum style --border double --margin "1 1" --padding "1 1" --width 60 \
     "Run `(bold "ddev describe")` for more details"
 
 echo "📧  Run `(bold "ddev mailpit")` to launch Mailpit interface and see caught e-mails"
-echo "🗄️   Run `(bold "ddev get ddev/ddev-phpmyadmin")` to install PHPMyAdmin"
+echo "🗄️   Run `(bold "ddev add-on  get ddev/ddev-phpmyadmin")` to install PHPMyAdmin"
 echo "🗄️   Run `(bold "ddev querious|sequelace|tableplus|dbeaver")` to launch database client app"
 echo ""
 echo "📦️  Run `(bold "ddev composer ...")` to execute Composer commands"

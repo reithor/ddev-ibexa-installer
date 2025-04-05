@@ -1,3 +1,6 @@
+docroot: public
+web_environment:
+  - VERBOSE_INSTALL=false # set to `true` to view verbose output during install
 hooks:
   post-start:
-    - exec-host: "if [[ ! -f composer.json ]];then ddev ibexa-configurator && ddev ibexa-installer; fi;"
+    # - exec-host: ""
