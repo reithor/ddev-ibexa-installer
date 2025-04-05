@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [[ -f composer.lock ]];then
+  ddev config --project-type=php
+  ddev add-on get ~/ddev-ibexa-installer
+
+  ddev ibexa-configurator
+  ddev ibexa-setup
+  ddev ibexa-installer
+else
+  echo "❗️No composer.lock found                                        ❗️️"
+  echo "❗️consider using ~/ddev-ibexa-installer/bin/create_project      ❗️"
+fi

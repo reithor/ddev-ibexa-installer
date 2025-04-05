@@ -111,7 +111,7 @@ if [ "$HTTP_CACHE" == "varnish" ]; then
    echo "${YAML_TAB}- HTTPCACHE_PURGE_TYPE=varnish" >> .ddev/config.local.yaml
    echo "${YAML_TAB}- HTTPCACHE_PURGE_SERVER=$DDEV_PRIMARY_URL" >> .ddev/config.local.yaml
 
-   verbose_output ddev get reithor/ddev-varnish
+   verbose_output ddev add-on  get ~/ddev-varnish
 fi
 
 echo "👷 Configured HTTP cache: $HTTP_CACHE"
@@ -123,7 +123,7 @@ if [ "$APP_CACHE" == "memcached" ]; then
     echo "${YAML_TAB}- CACHE_POOL=\"cache.memcached\"" >> .ddev/config.local.yaml
     echo "${YAML_TAB}- CACHE_DSN=\"memcached:11211?weight=33\"" >> .ddev/config.local.yaml
 
-    verbose_output ddev get ddev/ddev-memcached
+    verbose_output ddev add-on  get ddev/ddev-memcached
 fi
 
 # Redis
@@ -133,7 +133,7 @@ if [ "$APP_CACHE" == "redis" ]; then
     echo "${YAML_TAB}- CACHE_POOL=cache.redis" >> .ddev/config.local.yaml
     echo "${YAML_TAB}- CACHE_DSN=redis@redis:6379" >> .ddev/config.local.yaml
 
-    verbose_output ddev get ddev/ddev-redis-7
+    verbose_output ddev add-on  get ddev/ddev-redis-7
 
     echo "# " >> .ddev/redis/memory.conf
     echo "# dxp-installer generated" >> .ddev/redis/memory.conf
@@ -150,7 +150,7 @@ if [ "$SEARCH_ENGINE" == "solr" ]; then
     echo "${YAML_TAB}- SOLR_CORE=collection1" >> .ddev/config.local.yaml
     echo "${YAML_TAB}- SOLR_DSN=http://solr:8983/solr" >> .ddev/config.local.yaml
 
-    verbose_output ddev get ibexa/ddev-solr
+    verbose_output ddev add-on  get ibexa/ddev-solr
 fi
 
 # Elasticsearch
@@ -160,7 +160,7 @@ if [ "$SEARCH_ENGINE" == "elasticsearch" ]; then
     echo "${YAML_TAB}- SEARCH_ENGINE=elasticsearch" >> .ddev/config.local.yaml
     echo "${YAML_TAB}- ELASTICSEARCH_DSN=http://elasticsearch:9200" >> .ddev/config.local.yaml
 
-    verbose_output ddev get ddev/ddev-elasticsearch
+    verbose_output ddev add-on  get ddev/ddev-elasticsearch
 fi
 
 echo "👷 Configured search engine: $SEARCH_ENGINE"

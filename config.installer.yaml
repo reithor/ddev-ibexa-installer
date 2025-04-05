@@ -1,4 +1,6 @@
 docroot: public
+web_environment:
+  - VERBOSE_INSTALL=false # set to `true` to view verbose output during install
 hooks:
   post-start:
     # - exec-host: ""

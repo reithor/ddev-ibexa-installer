@@ -1,10 +1,15 @@
 #!/bin/bash
 
-ddev config --project-type=php
-ddev add-on get ~/ddev-ibexa-installer
-
 if [[ ! -f composer.json ]];then
-    ddev ibexa-configurator
-    ddev ibexa-setup
-    ddev ibexa-installer
+  ddev config --project-type=php
+  ddev add-on get ~/ddev-ibexa-installer
+
+  ddev ibexa-configurator
+  ddev ibexa-setup
+  ddev ibexa-installer
+else
+  echo "❗️composer.json found                                           ❗️️"
+  echo "❗️ddev-ibexa-installer/bin/create_project creates a new project ❗️"
+  echo "❗️consider using ~/ddev-ibexa-installer/bin/init_project        ❗️"
 fi
+
