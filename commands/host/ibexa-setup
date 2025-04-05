@@ -25,11 +25,11 @@ source $SETTINGS_FILE
 
 YAML_TAB="    "
 
-echo "# " >> .ddev/config.local.yaml
-echo "# dxp-installer generated" >> .ddev/config.local.yaml
-echo "web_environment:" >> .ddev/config.local.yaml
-
 if [ ! -f "$PROVISION_FILE_GENERAL" ]; then
+    echo "# " >> .ddev/config.local.yaml
+    echo "# dxp-installer generated" >> .ddev/config.local.yaml
+    echo "web_environment:" >> .ddev/config.local.yaml
+
     # Project name
     ddev config --project-name="$DDEV_SITENAME"
 
