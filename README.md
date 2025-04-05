@@ -60,6 +60,10 @@ When this is done, you can create new projects :
 ```
 mkdir installer_demo
 cd installer_demo
-~/ddev-ibexa-installer/create.sh
+~/ddev-ibexa-installer/bin/create_project
 ```
 
+Existing local project checkouts can be initialized:
+```
+~/ddev-ibexa-installer/bin/init_project
+```
