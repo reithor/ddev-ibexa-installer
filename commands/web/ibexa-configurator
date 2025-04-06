@@ -27,6 +27,7 @@ IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 [ -z "$INSTALL_PROFILER" ] && INSTALL_PROFILER=true
 [ -z "$APP_ENV" ] && APP_ENV="dev"
 [ -z "$INSTALL_CLOUD_CONFIG" ] && INSTALL_CLOUD_CONFIG=true
+[ -z "$PLATFORM_APP" ] && PLATFORM_APP=false
 
 if [ -f "$INSTANCE_SETTINGS_FILE" ]; then
     # Nothing to do
@@ -53,7 +54,6 @@ function detect_version() {
     if [ "$DXP_EDITION" != "website" ] && [ -f composer.lock ]; then
           MIN_STABILITY="`(jq -r '."minimum-stability"' composer.lock)`"
           PRODUCT_VERSION="`(jq -r '.packages[] | select(.name == "ibexa/oss") | .version' composer.lock | sed 's/^v//')`"
-          echo $PRODUCT_VERSION
           INSTALL_FROM_EDITION_SKELETON=true
     elif [ -f composer.json ]; then
         MIN_STABILITY="`(jq -r '."minimum-stability"' composer.json)`"
@@ -136,98 +136,48 @@ function configure_release() {
       return
     fi
 
-    choose "`(faint "[Release]")` `(bold "Select Release")`" "4.6 LTS" "4.6.x dev" "5.0.x dev" "3.3 LTS" "3.3.x release" "4.6.x release"
+    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "5.0.x dev:~5.0.x-dev" "3.3 LTS:=~3.3.0" "3.3.x release:3.3.x release" "4.6.x release:4.6.x release"
     if [[ "$SELECT" =~ .*"x release" ]]; then
         PRODUCT_VERSION=$SELECT
         PRODUCT_VERSION="${SELECT/x release/}"
         PRODUCT_VERSION=$(gum input --value=$PRODUCT_VERSION --prompt="Please provide minor release >  ")
     else
-        case "$SELECT" in
-            "4.6 LTS")
-                PRODUCT_VERSION=~4.6.0
-                ;;
-            "4.6.x dev")
-                PRODUCT_VERSION=~4.6.x-dev
-                ;;
-            "5.0.x dev")
-                PRODUCT_VERSION=~5.0.x-dev
-                ;;
-            "3.3 LTS")
-                PRODUCT_VERSION=~3.3.0
-                ;;
-        esac
+        PRODUCT_VERSION="$SELECT"
     fi
 }
 
 function configure_php() {
-    choose "`(faint "[Setup]")` `(bold "Select PHP version")`" "8.3 (recommended)" "8.2" "8.1"
-    case "$SELECT" in
-        "8.3 (recommended)")
-            PHP_VERSION="8.3"
-            ;;
-        "8.2")
-            PHP_VERSION="8.2"
-            ;;
-        "8.1")
-            PHP_VERSION="8.1"
-            ;;
-    esac
+    choose_delimited "`(faint "[Setup]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1"
+    PHP_VERSION="$SELECT"
 }
 
 function configure_node() {
-    choose "`(faint "[Setup]")` `(bold "Select Node version")`" "20 (recommended)" "18" "21" "22"
-    case "$SELECT" in
-        "20 (recommended)")
-            NODE_VERSION="20"
-            ;;
-        "18")
-            NODE_VERSION="18"
-            ;;
-        "21")
-            NODE_VERSION="21"
-            ;;
-        "22")
-            NODE_VERSION="22"
-            ;;
-    esac
+    choose_delimited "`(faint "[Setup]")` `(bold "Select Node version")`" "$NODE_VERSION" "20 (recommended):20" "18:18" "21:21" "22:22"
+    NODE_VERSION="$SELECT"
 }
 
 function configure_http_server() {
-    choose "`(faint "[Setup]")` `(bold "Select HTTP server")`" "nginx (recommended)" "Apache"
-    case "$SELECT" in
-        "nginx (recommended)")
-            HTTP_SERVER="nginx-fpm"
-            ;;
-        "Apache")
-            HTTP_SERVER="apache-fpm"
-            ;;
-    esac
+    choose_delimited "`(faint "[Setup]")` `(bold "Select HTTP server")`" "$HTTP_SERVER" "nginx (recommended):nginx-fpm" "Apache:apache-fpm"
+    HTTP_SERVER="$SELECT"
 }
 
 function configure_http_cache() {
-    choose "`(faint "[Setup]")` `(bold "Select HTTP cache")`" "Symfony" "Varnish (recommended)"
-    case "$SELECT" in
-        "Symfony")
-            HTTP_CACHE="symfony"
-            ;;
-        "Varnish (recommended)")
-            HTTP_CACHE="varnish"
-            ;;
-    esac
+    choose_delimited "`(faint "[Setup]")` `(bold "Select HTTP cache")`" "$HTTP_CACHE" "Symfony:symfony" "Varnish (recommended):varnish"
+    HTTP_CACHE="$SELECT"
 }
 
 function configure_database() {
-    choose "`(faint "[Setup]")` `(bold "Select database platform")`" "MariaDB (recommended)" "MySQL" "PostgreSQL"
+    choose_delimited "`(faint "[Setup]")` `(bold "Select database platform")`" "$DATABASE" "MariaDB (recommended):mariadb" "MySQL:mysql" "PostgreSQL:postgres"
     case "$SELECT" in
-        "MariaDB (recommended)")
+        "mariadb")
             DATABASE="mariadb"
             configure_mariadb_version
             ;;
-        "MySQL")
+        "mysql")
             DATABASE="mysql"
             DATABASE_VERSION="8.0"
             ;;
-        "PostgreSQL")
+        "postgres")
             DATABASE="postgres"
             configure_postgres_version
             ;;
@@ -235,72 +185,23 @@ function configure_database() {
 }
 
 function configure_mariadb_version() {
-    choose "`(faint "[Setup]")` `(bold "Select MariaDB version")`" "10.11 (recommended)" "10.3"
-    case "$SELECT" in
-        "10.11 (recommended)")
-            DATABASE_VERSION="10.11"
-            ;;
-        "10.3")
-            DATABASE_VERSION="10.3"
-            ;;
-    esac
+    choose_delimited "`(faint "[Setup]")` `(bold "Select MariaDB version")`" "$DATABASE_VERSION" "10.11 (recommended):10.11" "10.4:10.4" "10.3:10.3"
+    DATABASE_VERSION="$SELECT"
 }
 
 function configure_postgres_version() {
-    choose "`(faint "[Setup]")` `(bold "Select PostgreSQL version")`" "16 (recommended)" "15" "14" "13" "12" "11" "10"
-    case "$SELECT" in
-        "16 (recommended)")
-            DATABASE_VERSION="16"
-            ;;
-        "15")
-            DATABASE_VERSION="15"
-            ;;
-        "14")
-            DATABASE_VERSION="14"
-            ;;
-        "13")
-            DATABASE_VERSION="13"
-            ;;
-        "12")
-            DATABASE_VERSION="12"
-            ;;
-        "11")
-            DATABASE_VERSION="11"
-            ;;
-        "10")
-            DATABASE_VERSION="10"
-            ;;
-    esac
+    choose_delimited "`(faint "[Setup]")` `(bold "Select PostgreSQL version")`" "$DATABASE_VERSION" "16 (recommended):16" "15:15" "14:14" "13:13" "12:12" "11:11" "10:10"
+    DATABASE_VERSION="$SELECT"
 }
 
 function configure_app_cache() {
-    choose "`(faint "[Setup]")` `(bold "Select application cache")`" "Redis (recommended)" "Memcached" "Filesystem"
-    case "$SELECT" in
-        "Redis (recommended)")
-            APP_CACHE="redis"
-            ;;
-        "Memcached")
-            APP_CACHE="memcached"
-            ;;
-        "Filesystem")
-            APP_CACHE="filesystem"
-            ;;
-    esac
+    choose_delimited "`(faint "[Setup]")` `(bold "Select application cache")`" "$APP_CACHE" "Redis (recommended):redis" "Memcached:memcached" "Filesystem:filesystem"
+    APP_CACHE="$SELECT"
 }
 
 function configure_search_engine() {
-    choose "`(faint "[Setup]")` `(bold "Select search engine")`" "Legacy" "Elasticsearch (recommended)" "Solr"
-    case "$SELECT" in
-        "Legacy")
-            SEARCH_ENGINE="legacy"
-            ;;
-        "Elasticsearch (recommended)")
-            SEARCH_ENGINE="elasticsearch"
-            ;;
-        "Solr")
-            SEARCH_ENGINE="solr"
-            ;;
-    esac
+    choose_delimited "`(faint "[Setup]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Elasticsearch (recommended):elasticsearch" "Solr:solr"
+    SEARCH_ENGINE="$SELECT"
 }
 
 function configure_sample_data() {
@@ -440,7 +341,7 @@ function select_configuration() {
     if [[ ! -f composer.json && "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
         INSTALL_FROM_EDITION_SKELETON=false
     fi
-    
+
     print_selected_settings "`gum style --bold --underline -- "Your configuration:"`"
 
     if ! gum confirm "Confirm these settings?" ;
@@ -488,7 +389,14 @@ detect_version
 
 configure_product
 
-print_selected_settings "`gum style --bold --underline -- "Recommended configuration:"`"
+$PLATFORM_APP
+
+if [ "$PLATFORM_APP" == true ]; then
+  print_selected_settings "`gum style --bold --underline -- "Configuration with presets from Ibexa Cloud .platform.app.yaml:"`"
+else
+  print_selected_settings "`gum style --bold --underline -- "Recommended configuration:"`"
+fi
+
 
 if ! gum confirm "Do you confirm these settings?" ;
 then
