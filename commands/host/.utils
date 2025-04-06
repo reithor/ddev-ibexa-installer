@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## #ddev-generated
+
 export IBEXA_DXP_INSTALLED_LOCK_FILE=".ddev/.ibexa-dxp-installed"
 export INSTANCE_SETTINGS_FILE=".ddev/.ibexa-instance-settings"
 export VERBOSE_INSTALL=$(ddev exec printenv VERBOSE_INSTALL)
