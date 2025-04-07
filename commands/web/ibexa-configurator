@@ -389,8 +389,6 @@ detect_version
 
 configure_product
 
-$PLATFORM_APP
-
 if [ "$PLATFORM_APP" == true ]; then
   print_selected_settings "`gum style --bold --underline -- "Configuration with presets from Ibexa Cloud .platform.app.yaml:"`"
 else
