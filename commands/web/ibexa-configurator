@@ -77,8 +77,8 @@ function detect_product() {
 
     PROJECT_NAME=$(jq -r '.name' composer.json)
     if [ "$PROJECT_NAME" == "ibexa/website-skeleton" ] && \
-       [ "$(jq  -r '.require | to_entries[] | select(.key|startswith("ibexa/"))' composer.json)" != "" ]; then
-        PROJECT_NAME=$(jq  -r '.require | to_entries[] | select(.key|startswith("ibexa")) | .key ' composer.json)
+       [ "$(jq  -r '.require | to_entries[] | select(.key | startswith("ibexa/"))' composer.json)" != "" ]; then
+        PROJECT_NAME=$(jq  -r '.require | to_entries[] | select(.key | startswith("ibexa/commerce") or startswith("ibexa/experience") or startswith("ibexa/headless") or startswith("ibexa/content")) | .key ' composer.json)
     fi
 
     # Strip "ibexa/" and "-skeleton" parts from the value
@@ -143,11 +143,6 @@ function configure_release() {
         PRODUCT_VERSION=$(gum input --value=$PRODUCT_VERSION --prompt="Please provide minor release >  ")
     else
         PRODUCT_VERSION="$SELECT"
-    fi
-
-    if [[ "$PRODUCT_VERSION" =~ "3.".* && "$DXP_EDITION" == "headless" ]]; then
-          PRODUCT_TYPE="Ibexa DXP Content"
-          DXP_EDITION=content
     fi
 }
 
