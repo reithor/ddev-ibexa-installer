@@ -136,13 +136,18 @@ function configure_release() {
       return
     fi
 
-    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "5.0.x dev:~5.0.x-dev" "3.3 LTS:=~3.3.0" "3.3.x release:3.3.x release" "4.6.x release:4.6.x release"
+    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "5.0.x dev:~5.0.x-dev" "3.3 LTS:~3.3.0" "3.3.x release:3.3.x release" "4.6.x release:4.6.x release"
     if [[ "$SELECT" =~ .*"x release" ]]; then
         PRODUCT_VERSION=$SELECT
         PRODUCT_VERSION="${SELECT/x release/}"
         PRODUCT_VERSION=$(gum input --value=$PRODUCT_VERSION --prompt="Please provide minor release >  ")
     else
         PRODUCT_VERSION="$SELECT"
+    fi
+
+    if [[ "$PRODUCT_VERSION" =~ "3.".* && "$DXP_EDITION" == "headless" ]]; then
+          PRODUCT_TYPE="Ibexa DXP Content"
+          DXP_EDITION=content
     fi
 }
 
