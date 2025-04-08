@@ -37,6 +37,12 @@ if [ "$VERBOSE_INSTALL" == false ]; then
     clear
 fi
 
+# Fallback headless -> content for 3.3 releases
+if [[ "$PRODUCT_VERSION" == *"3.3."* && "$DXP_EDITION" == "headless" ]]; then
+    PRODUCT_TYPE="Ibexa DXP Content"
+    DXP_EDITION=content
+fi
+
 # Workaround to the issue on Mac OS
 ddev exec git config --global --add safe.directory /var/www/html
 
