@@ -143,6 +143,9 @@ if [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
     execute_with_spinner "Composer [post-update-cmd]" composer run post-update-cmd
     execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing
     ddev php bin/console cache:clear
+    if [ "$APP_CACHE" == "redis" ]; then
+      ddev php bin/console cache:pool:clear cache.redis
+    fi
 else
     execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing
 fi
