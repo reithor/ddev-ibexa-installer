@@ -65,9 +65,9 @@ if [ ! -f "$PROVISION_FILE_GENERAL" ]; then
 
     echo "👷 Restarting ddev project to reflect webserver and database changes"
 
-    touch "$PROVISION_FILE_GENERAL"
+    echo "`date`" > "$PROVISION_FILE_GENERAL"
 
-    verbose_output ddev restart
+    verbose_output ddev restart -y
 fi
 
 if [ -f "$PROVISION_FILE_SERVICES" ]; then
@@ -102,6 +102,7 @@ echo "${YAML_TAB}- DATABASE_VERSION=${DB_VERSION}" >> .ddev/config.local.yaml
 echo "${YAML_TAB}- DATABASE_CHARSET=${DB_CHARSET}" >> .ddev/config.local.yaml
 echo "${YAML_TAB}- DATABASE_COLLATION=${DB_COLLATION}" >> .ddev/config.local.yaml
 
+ddev config --
 echo "👷 Saved database details in .ddev/config.local.yaml"
 
 if [ "$HTTP_CACHE" == "varnish" ]; then
@@ -109,9 +110,9 @@ if [ "$HTTP_CACHE" == "varnish" ]; then
    echo "# dxp-installer generated" >> .ddev/config.local.yaml
    echo "${YAML_TAB}- TRUSTED_PROXIES=REMOTE_ADDR" >> .ddev/config.local.yaml
    echo "${YAML_TAB}- HTTPCACHE_PURGE_TYPE=varnish" >> .ddev/config.local.yaml
-   echo "${YAML_TAB}- HTTPCACHE_PURGE_SERVER=$DDEV_PRIMARY_URL" >> .ddev/config.local.yaml
+   echo "${YAML_TAB}- HTTPCACHE_PURGE_SERVER=\$DDEV_PRIMARY_URL" >> .ddev/config.local.yaml
 
-   verbose_output ddev add-on  get ~/ddev-varnish
+   verbose_output ddev add-on  get reithor/ddev-varnish
 fi
 
 echo "👷 Configured HTTP cache: $HTTP_CACHE"
@@ -166,5 +167,5 @@ fi
 echo "👷 Configured search engine: $SEARCH_ENGINE"
 
 echo "✅ Finished setting up ddev services. Restarting the environment..."
-touch "$PROVISION_FILE_SERVICES"
-ddev restart
+echo "`date`" > "$PROVISION_FILE_SERVICES"
+ddev restart -y
