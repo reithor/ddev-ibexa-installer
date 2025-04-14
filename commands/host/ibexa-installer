@@ -82,19 +82,23 @@ elif [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
 else
     ddev composer create -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
     
+    if [[ "$PHP_VERSION" = "8.3" && "$PRODUCT_VERSION" = *"4.6"*  ]]; then
+        COMPOSER_MODE=install
+        REQUIRE_MODE="--no-scripts --no-plugins --no-install --no-interaction --quiet"
+    else
+        COMPOSER_MODE=update
+        REQUIRE_MODE="--update-with-all-dependencies --no-scripts --no-plugins --no-install --no-interaction --quiet"
+    fi
+
     if [ "$DXP_EDITION" != "oss" ]; then
         trap 'composer_auth_error' ERR
-        execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION --no-scripts --no-plugins --no-install --no-interaction --quiet
+        execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION $REQUIRE_MODE
         trap 'error_handler' ERR
         echo "✅ Repository `(bold updates.ibexa.co)` is reachable"
     fi
 
-    if [[ "$PHP_VERSION" = "8.3" && "$PRODUCT_VERSION" = *"4.6"*  ]]
-      then
-        execute_with_spinner "Running Composer [install]" composer install --optimize-autoloader
-      else
-        execute_with_spinner "Running Composer [update]" composer update --optimize-autoloader
-    fi
+    execute_with_spinner "Running Composer [$COMPOSER_MODE]" composer $COMPOSER_MODE --optimize-autoloader
+
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
     ddev exec git init -q  > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
