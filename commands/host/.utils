@@ -55,6 +55,10 @@ function banner() {
         ""
 }
 
+function faint() {
+    ddev gum style --faint "$@"
+}
+
 function error_handler() {
     echo ""
     echo "❌️  An error occurred. Exiting..."

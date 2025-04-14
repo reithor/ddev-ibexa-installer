@@ -102,7 +102,6 @@ echo "${YAML_TAB}- DATABASE_VERSION=${DB_VERSION}" >> .ddev/config.local.yaml
 echo "${YAML_TAB}- DATABASE_CHARSET=${DB_CHARSET}" >> .ddev/config.local.yaml
 echo "${YAML_TAB}- DATABASE_COLLATION=${DB_COLLATION}" >> .ddev/config.local.yaml
 
-ddev config --
 echo "👷 Saved database details in .ddev/config.local.yaml"
 
 if [ "$HTTP_CACHE" == "varnish" ]; then
