@@ -65,5 +65,25 @@ function error_handler() {
     exit 1
 }
 
+function check_composer_auth() {
+    HAS_USERNAME=$(ddev composer config --list | grep http-basic.updates.ibexa.co.username)
+    HAS_PASSWORD=$(ddev composer config --list | grep http-basic.updates.ibexa.co.password)
+
+    if [[ ! "$HAS_USERNAME"  || ! "$HAS_PASSWORD" ]]; then
+        echo "❌️  An error occurred. Can not connect to https://updates.ibexa.co"
+        echo "❌️  username / password are missing "
+        exit 1
+    fi
+
+    USERNAME=$(ddev composer config http-basic.updates.ibexa.co.username)
+    PASSWORD=$(ddev composer config http-basic.updates.ibexa.co.password)
+    HTTPRESPONSE=$(curl -Isu $USERNAME:$PASSWORD https://updates.ibexa.co | head -n 1)
+
+
+    if [[ ! "$HTTPRESPONSE" == *"HTTP/2 200"* ]]; then
+        echo "❌️  An error occurred. Can not connect to https://updates.ibexa.co"
+    fi
+}
+
 # Set custom error handler
 trap 'error_handler' ERR

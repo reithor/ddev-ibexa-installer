@@ -1,35 +1,25 @@
 #!/bin/bash
 
 #
-# Script creates a directory $1 containing .ddev configuration
-# to kickstart a project with the settings below by running
+# Script creates a .ddev configuration
+# to kickstart a project with fixed settings.
+# Kickstart by running:
 # ddev start; ddev ibexa-setup; ddev ibexa-installer; 
 #
 
-if [ $# -eq 0 ]; then
-  echo "❗️Please provide a name for the new directory ❗️"
+if [ $(ls -A "$PWD" | wc -l) -ne 0 ]; then
+  echo "❗️Script requires an empty directory ❗️"
   exit;
 fi
 
-if [[ ! $1 =~ ^[a-zA-Z0-9][-a-zA-Z0-9\._]*[a-zA-Z0-9]$ ]]; then
-  echo "❗️Please provide a valid name for the new directory ❗️"
-  exit;
-fi
-
-mkdir $1
-if [ $? -ne 0 ] ; then
-  echo "❗️Error while creating $1  ❗️"
-  exit;
-fi
-
-cd $1
 ddev config --project-type=php
 ddev add-on get ~/ddev-ibexa-installer
 
+# fixed settings
 cat <<EOF > .ddev/.ibexa-instance-settings
 declare -- DXP_EDITION="experience"
 declare -- PRODUCT_TYPE="Ibexa DXP Experience"
-declare -- PRODUCT_VERSION="~4.6.0"
+declare -- PRODUCT_VERSION="~4.6.x-dev"
 declare -- PHP_VERSION="8.3"
 declare -- NODE_VERSION="20"
 declare -- DATABASE="mariadb"
@@ -42,17 +32,14 @@ declare -- INSTALL_PROFILER="true"
 declare -- APP_ENV="dev"
 declare -- HTTP_SERVER="nginx-fpm"
 declare -- INSTALL_CLOUD_CONFIG="true"
-declare -- INSTALL_FROM_EDITION_SKELETON="false"
-declare -- FRESH_INSTALL="true"
 EOF
 
 # remove config name - as it by default uses the current directory
 sed -i '/^name:/d' .ddev/config.yaml
 
-echo "👍 .ddev project configuration has been created inside $1"
+echo "👍 .ddev project configuration has been created inside current directory"
 echo "👍 run:"
 echo "👍 "
-echo "👍 cd $1"
 echo "👍 ddev start; ddev ibexa-setup; ddev ibexa-installer"
 echo "👍 "
 echo "👍 to kickstart the project´"

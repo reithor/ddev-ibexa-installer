@@ -36,7 +36,7 @@ fi
 
 function detect_installation() {
     if [ -f composer.lock ]; then
-        FRESH_INSTALL=false
+        REQUIRE=NONE
         # profiler loaded from composer.json
         INSTALL_PROFILER=false
         LABEL_INSTALL_PROFILER="No"
@@ -45,38 +45,33 @@ function detect_installation() {
         LABEL_INSTALL_SAMPLE_DATA="No"
         #
         INSTALL_CLOUD_CONFIG=false
-    else
-        FRESH_INSTALL=true
     fi
 }
 
 function detect_version() {
     if [ "$DXP_EDITION" != "website" ] && [ -f composer.lock ]; then
-          MIN_STABILITY="`(jq -r '."minimum-stability"' composer.lock)`"
-          PRODUCT_VERSION="`(jq -r '.packages[] | select(.name == "ibexa/oss") | .version' composer.lock | sed 's/^v//')`"
-          INSTALL_FROM_EDITION_SKELETON=true
+        MIN_STABILITY="`(jq -r '."minimum-stability"' composer.lock)`"
+        PRODUCT_VERSION="`(jq -r '.packages[] | select(.name == "ibexa/oss") | .version' composer.lock | sed 's/^v//')`"
     elif [ -f composer.json ]; then
         MIN_STABILITY="`(jq -r '."minimum-stability"' composer.json)`"
         PRODUCT_VERSION="`(jq -r '.extra."branch-alias"."dev-main"' composer.json)`"
-        INSTALL_FROM_EDITION_SKELETON=true
-    elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
-        INSTALL_FROM_EDITION_SKELETON=false
-    else
+    elif [[ ! "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
         PRODUCT_VERSION="4.6 Latest"
         MIN_STABILITY="dev"
         DXP_EDITION="website"
-        INSTALL_FROM_EDITION_SKELETON=true
     fi
 }
 
 function detect_product() {
-    if [ "$FRESH_INSTALL" == true ]; then
+    if [ ! "$REQUIRE" == "NONE" ]; then
         PRODUCT_TYPE="Ibexa DXP Experience"
         return
     fi
 
     PROJECT_NAME=$(jq -r '.name' composer.json)
-    if [ "$PROJECT_NAME" == "ibexa/website-skeleton" ] && \
+    # try to extract prouct edition from composer.json -> require
+    if [ "$PROJECT_NAME" == "null" ] ||  \
+       [ "$PROJECT_NAME" == "ibexa/website-skeleton" ] && \
        [ "$(jq  -r '.require | to_entries[] | select(.key | startswith("ibexa/"))' composer.json)" != "" ]; then
         PROJECT_NAME=$(jq  -r '.require | to_entries[] | select(.key | startswith("ibexa/commerce") or startswith("ibexa/experience") or startswith("ibexa/headless") or startswith("ibexa/content")) | .key ' composer.json)
     fi
@@ -103,7 +98,7 @@ function detect_product() {
 }
 
 function configure_product() {
-    if [ "$FRESH_INSTALL" == false ]; then
+    if [ "$REQUIRE" == "NONE" ]; then
       return
     fi
 
@@ -132,8 +127,8 @@ function configure_product() {
 }
 
 function configure_release() {
-    if [ "$FRESH_INSTALL" == false ]; then
-      return
+    if [ "$REQUIRE" == "NONE" ]; then
+        return
     fi
 
     choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "5.0.x dev:~5.0.x-dev" "3.3 LTS:~3.3.0" "3.3.x release:3.3.x release" "4.6.x release:4.6.x release"
@@ -209,8 +204,8 @@ function configure_search_engine() {
 }
 
 function configure_sample_data() {
-    if [ "$FRESH_INSTALL" == false ]; then
-      return
+    if [ "$REQUIRE" == "NONE" ]; then
+        return
     fi
 
     if [ "$DXP_EDITION" != "oss" ]; then
@@ -233,7 +228,7 @@ function configure_sample_data() {
 }
 
 function configure_profiler() {
-    if [ "$FRESH_INSTALL" == false ]; then
+    if [ "$REQUIRE" == "NONE" ]; then
         return
     fi
 
@@ -263,7 +258,7 @@ function configure_app_env() {
 }
 
 function configure_cloud() {
-    if [ "$FRESH_INSTALL" == false ]; then
+    if [ "$REQUIRE_NONE" == true ]; then
         return
     fi
 
@@ -342,10 +337,6 @@ function select_configuration() {
     configure_app_env
     configure_cloud
 
-    if [[ ! -f composer.json && "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
-        INSTALL_FROM_EDITION_SKELETON=false
-    fi
-
     print_selected_settings "`gum style --bold --underline -- "Your configuration:"`"
 
     if ! gum confirm "Confirm these settings?" ;
@@ -371,8 +362,6 @@ function save_settings_file() {
         declare -p APP_ENV
         declare -p HTTP_SERVER
         declare -p INSTALL_CLOUD_CONFIG
-        declare -p INSTALL_FROM_EDITION_SKELETON
-        declare -p FRESH_INSTALL
     } > "$INSTANCE_SETTINGS_FILE"
 }
 

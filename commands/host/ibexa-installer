@@ -50,15 +50,25 @@ banner "Interactive Installation Tool"
 
 echo "🚀 Product to be installed: `(bold "$PRODUCT_TYPE $PRODUCT_VERSION")`"
 
-# Installation steps between website-skeleton and edition skeletons are different
-if [ "$FRESH_INSTALL" == false ]; then
+# Installation steps depend on project
+
+# 1. Existing project / with all vendor files
+if [ -d vendor ]; then
+    REQUIRE=NONE
+    INSTALL_PROFILER=false
+    INSTALL_CLOUD_CONF=false
+    INSTALL_SAMPLE_DATA=false
+# 2. Existing project / no vendor files
+elif [ -f composer.lock ]; then
+    REQUIRE=NONE
     if [ "$APP_ENV" == "dev" ]; then
       execute_with_spinner "Running Composer [install]" composer install --optimize-autoloader
     else
       execute_with_spinner "Running Composer [install]" composer install --no-dev --optimize-autoloader
     fi
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
-elif [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
+# 3. New DEV Installation
+elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     ddev composer create ibexa/website-skeleton:$PRODUCT_VERSION
     ddev composer config repositories.ibexa composer https://updates.ibexa.co
     ddev composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
@@ -79,6 +89,7 @@ elif [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
     
     ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "recipes:install" > /dev/null;
     echo "✅ Commit recipes:install"
+# 4. New regular release
 else
     ddev composer create -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
     
@@ -137,13 +148,13 @@ if [ "$INSTALL_CLOUD_CONFIG" == true ]; then
     ADDED_PACKAGE=true
 fi
 
-if [[ "$ADDED_PACKAGE" == true && "$FRESH_INSTALL" == true ]]; then
+if [[ "$ADDED_PACKAGE" == true &&  ! "$REQUIRE" == "NONE" ]]; then
   ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Added packages" &> /dev/null;
 fi
 
 echo "✅ Scripts finished successfully"
 
-if [ "$INSTALL_FROM_EDITION_SKELETON" == false ]; then
+if [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     execute_with_spinner "Composer [post-update-cmd]" composer run post-update-cmd
     execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing
     ddev php bin/console cache:clear
@@ -178,6 +189,10 @@ fi
 
 execute_with_spinner "Generate GraphQL schema [ibexa:graphql:generate-schema]" php bin/console ibexa:graphql:generate-schema
 echo "✅ GraphQL schema generated"
+
+if [[ "$REQUIRE" == "NONE" ]]; then
+  execute_with_spinner "Composer [post-update-cmd]" composer run post-update-cmd
+fi
 
 echo "✅ All done! You can now access your new project using provided details:"
 

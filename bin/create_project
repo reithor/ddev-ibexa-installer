@@ -1,15 +1,14 @@
 #!/bin/bash
 
-if [[ ! -f composer.json ]];then
-  ddev config --project-type=php
-  ddev add-on get ~/ddev-ibexa-installer
-
-  ddev ibexa-configurator
-  ddev ibexa-setup
-  ddev ibexa-installer
-else
-  echo "❗️composer.json found                                           ❗️️"
-  echo "❗️ddev-ibexa-installer/bin/create_project creates a new project ❗️"
-  echo "❗️consider using ~/ddev-ibexa-installer/bin/init_project        ❗️"
+if [ $(ls -A "$PWD" | wc -l) -ne 0 ]; then
+  echo "❗️Script requires an empty directory ❗️"
+  exit;
 fi
+
+ddev config --project-type=php
+ddev add-on get ~/ddev-ibexa-installer
+
+ddev ibexa-configurator
+ddev ibexa-setup
+ddev ibexa-installer
 
