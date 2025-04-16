@@ -69,6 +69,7 @@ elif [ -f composer.lock ]; then
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
 # 3. New DEV Installation
 elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
+    mv .env.local .ddev/.env.local
     ddev composer create ibexa/website-skeleton:$PRODUCT_VERSION
     ddev composer config repositories.ibexa composer https://updates.ibexa.co
     ddev composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
@@ -89,8 +90,10 @@ elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     
     ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "recipes:install" > /dev/null;
     echo "✅ Commit recipes:install"
+    mv .ddev/.env.local .env.local
 # 4. New regular release
 else
+    mv .env.local .ddev/.env.local
     ddev composer create -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
     
     if [[ "$PHP_VERSION" = "8.3" && "$PRODUCT_VERSION" = *"4.6"*  ]]; then
@@ -113,6 +116,7 @@ else
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
     ddev exec git init -q  > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
+    mv .ddev/.env.local .env.local
 fi
 
 ADDED_PACKAGE=false
@@ -167,13 +171,14 @@ fi
 echo "✅ Database installed"
 
 if [ "$SEARCH_ENGINE" = "elasticsearch" ]; then
+    # clear elastic index before creating index template
+    ddev exec  curl -XDELETE 'elasticsearch:9200/*' > /dev/null
     ddev php bin/console ibexa:elasticsearch:put-index-template
     echo "✅ Put Elasticsearch index template"
 fi
 
 execute_with_spinner "Reindex [ibexa:reindex]" php bin/console ibexa:reindex
 echo "✅ Reindexed search data"
-
 
 function sample_data_error() {
     echo "❗️ Error while creating sampea data ❗️"
@@ -193,6 +198,7 @@ echo "✅ GraphQL schema generated"
 if [[ "$REQUIRE" == "NONE" ]]; then
   execute_with_spinner "Composer [post-update-cmd]" composer run post-update-cmd
 fi
+
 
 echo "✅ All done! You can now access your new project using provided details:"
 
