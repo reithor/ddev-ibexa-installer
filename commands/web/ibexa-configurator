@@ -199,7 +199,12 @@ function configure_app_cache() {
 }
 
 function configure_search_engine() {
-    choose_delimited "`(faint "[Setup]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Elasticsearch (recommended):elasticsearch" "Solr:solr"
+    if [ "$DXP_EDITION" != "oss" ]; then
+        choose_delimited "`(faint "[Setup]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Elasticsearch (recommended):elasticsearch" "Solr:solr"
+    else
+        choose_delimited "`(faint "[Setup]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Solr (recommended):solr"
+    fi
+
     SEARCH_ENGINE="$SELECT"
 }
 
