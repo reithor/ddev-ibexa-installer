@@ -88,8 +88,9 @@ elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     ddev composer recipes:install ibexa/$DXP_EDITION --force --reset
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
     
-    ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "recipes:install" > /dev/null;
-    echo "✅ Commit recipes:install"
+    ddev exec git add . :'!.ddev' > /dev/null;
+    ddev exec 'if [ $(git diff --cached --numstat | wc -l) -ne 0 ]; then git commit -m "recipes:install" > /dev/null; fi'
+    echo "✅ recipes:install done"
     mv .ddev/.env.local .env.local
 # 4. New regular release
 else
