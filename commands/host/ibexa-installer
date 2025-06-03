@@ -71,7 +71,9 @@ elif [ -f composer.lock ]; then
 elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     ddev composer create ibexa/website-skeleton:$PRODUCT_VERSION
     ddev composer config repositories.ibexa composer https://updates.ibexa.co
-    ddev composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
+    if [[ "$PRODUCT_VERSION" = *"4.6"* ]]; then
+        ddev composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
+    fi
 
     if [ "$DXP_EDITION" != "oss" ]; then
         trap 'composer_auth_error' ERR
