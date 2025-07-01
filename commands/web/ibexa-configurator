@@ -174,7 +174,7 @@ function configure_database() {
             ;;
         "mysql")
             DATABASE="mysql"
-            DATABASE_VERSION="8.0"
+            configure_mysql_version
             ;;
         "postgres")
             DATABASE="postgres"
@@ -185,6 +185,15 @@ function configure_database() {
 
 function configure_mariadb_version() {
     choose_delimited "`(faint "[Setup]")` `(bold "Select MariaDB version")`" "$DATABASE_VERSION" "10.11 (recommended):10.11" "10.4:10.4" "10.3:10.3"
+    DATABASE_VERSION="$SELECT"
+}
+
+function configure_mysql_version() {
+    if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
+        choose_delimited "`(faint "[Setup]")` `(bold "Select Mysql version")`" "$DATABASE_VERSION" "8.0 (recommended):8.0" "5.7:5.7"
+    else
+        choose_delimited "`(faint "[Setup]")` `(bold "Select Mysql version")`" "$DATABASE_VERSION" "8.4 (recommended):8.4" "8.0:8.0"
+    fi
     DATABASE_VERSION="$SELECT"
 }
 
