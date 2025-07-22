@@ -56,7 +56,7 @@ function detect_version() {
         MIN_STABILITY="`(jq -r '."minimum-stability"' composer.json)`"
         PRODUCT_VERSION="`(jq -r '.extra."branch-alias"."dev-main"' composer.json)`"
     elif [[ ! "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
-        PRODUCT_VERSION="4.6 Latest"
+        PRODUCT_VERSION="5.0"
         MIN_STABILITY="dev"
         DXP_EDITION="website"
     fi
@@ -121,7 +121,9 @@ function configure_product() {
         esac
     fi
 
-    if [ "$PRODUCT_VERSION" == "4.6 Latest" ]; then
+    if [ "$PRODUCT_VERSION" == "5.0" ]; then
+        PRODUCT_VERSION=~5.0.0
+    elif [ "$PRODUCT_VERSION" == "4.6 Latest" ]; then
         PRODUCT_VERSION=~4.6.0
     fi
 }
@@ -131,7 +133,7 @@ function configure_release() {
         return
     fi
 
-    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "5.0.x dev:~5.0.x-dev" "3.3 LTS:~3.3.0" "3.3.x release:3.3.x release" "4.6.x release:4.6.x release"
+    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION" "5.0:~5.0.0" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "5.0.x dev:~5.0.x-dev" "3.3 LTS:~3.3.0" "3.3.x release:3.3.x release" "4.6.x release:4.6.x release"
     if [[ "$SELECT" =~ .*"x release" ]]; then
         PRODUCT_VERSION=$SELECT
         PRODUCT_VERSION="${SELECT/x release/}"

@@ -82,6 +82,8 @@ DB_VERSION=$DATABASE_VERSION
 DB_CHARSET=utf8mb4
 DB_COLLATION=utf8mb4_unicode_520_ci
 
+ddev dotenv set .ddev/.env --dxp-release="$PRODUCT_VERSION"
+
 if [ "$DATABASE" == "mariadb" ]; then
     DB_VERSION=mariadb-`ddev exec -s db mysql -V | awk '{print $5}' | sed 's/-.*//'`
 fi
@@ -103,13 +105,18 @@ echo "DATABASE_COLLATION=${DB_COLLATION}" >> .env.local
 echo "👷 Saved database details in .env.local"
 
 if [ "$HTTP_CACHE" == "varnish" ]; then
-   echo "# " >> .env.local
-   echo "# dxp-installer generated" >> .env.local
-   echo "TRUSTED_PROXIES=REMOTE_ADDR" >> .env.local
-   echo "HTTPCACHE_PURGE_TYPE=varnish" >> .env.local
-   echo "HTTPCACHE_PURGE_SERVER=\$DDEV_PRIMARY_URL" >> .env.local
+    echo "# " >> .env.local
+    echo "# dxp-installer generated" >> .env.local
+    echo "TRUSTED_PROXIES=REMOTE_ADDR" >> .env.local
+    echo "HTTPCACHE_PURGE_TYPE=varnish" >> .env.local
+    echo "HTTPCACHE_PURGE_SERVER=\$DDEV_PRIMARY_URL" >> .env.local
 
-   verbose_output ddev add-on  get reithor/ddev-varnish
+    verbose_output ddev add-on  get reithor/ddev-varnish
+
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
+        ddev dotenv set .ddev/.env --varnish-image-version="7.7.0"
+        ddev ibexa-syncvcl 7 5        
+    fi
 fi
 
 echo "👷 Configured HTTP cache: $HTTP_CACHE"
