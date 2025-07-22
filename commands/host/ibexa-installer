@@ -99,7 +99,7 @@ else
     mv .env.local .ddev/.env.local
     ddev composer create -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
     
-    if [[ "$PHP_VERSION" = "8.3" && "$PRODUCT_VERSION" = *"4.6"*  ]]; then
+    if [[ "$PHP_VERSION" = "8.3" && ( "$PRODUCT_VERSION" =~ ^(~|v)?5\.0  || "$PRODUCT_VERSION" =~ ^(~|v)?4\.6 )  ]]; then
         COMPOSER_MODE=install
         REQUIRE_MODE="--no-scripts --no-plugins --no-install --no-interaction --quiet"
     else
@@ -120,6 +120,11 @@ else
     ddev exec git init -q  > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
     mv .ddev/.env.local .env.local
+fi
+
+# read vcl from vendor/ibexa/hhtp-cache
+if [ "$HTTP_CACHE" == "varnish" ]; then
+    ddev ibexa-syncvcl 
 fi
 
 ADDED_PACKAGE=false
@@ -163,13 +168,13 @@ echo "✅ Scripts finished successfully"
 
 if [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     execute_with_spinner "Composer [post-update-cmd]" composer run post-update-cmd
-    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing
+    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing --no-interaction
     ddev php bin/console cache:clear
     if [ "$APP_CACHE" == "redis" ]; then
       ddev php bin/console cache:pool:clear cache.redis
     fi
 else
-    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing
+    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing --no-interaction
 fi
 echo "✅ Database installed"
 
