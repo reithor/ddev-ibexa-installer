@@ -18,7 +18,7 @@ IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 [ -z "$PHP_VERSION" ] && PHP_VERSION="8.3"
 [ -z "$DATABASE" ] && DATABASE="mariadb"
 [ -z "$DATABASE_VERSION" ] && DATABASE_VERSION="10.11"
-[ -z "$NODE_VERSION" ] && NODE_VERSION="20"
+[ -z "$NODE_VERSION" ] && NODE_VERSION="22"
 [ -z "$HTTP_CACHE" ] && HTTP_CACHE="symfony"
 [ -z "$HTTP_SERVER" ] && HTTP_SERVER="nginx-fpm"
 [ -z "$APP_CACHE" ] && APP_CACHE="redis"
@@ -144,6 +144,11 @@ function configure_release() {
 }
 
 function configure_php() {
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
+        PHP_VERSION="8.3"        
+        return
+    fi
+
     if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
       choose_delimited "`(faint "[Setup]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1" "7.4:7.4"
     else
@@ -153,6 +158,11 @@ function configure_php() {
 }
 
 function configure_node() {
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
+        NODE_VERSION="22"
+        return
+    fi
+
     choose_delimited "`(faint "[Setup]")` `(bold "Select Node version")`" "$NODE_VERSION" "20 (recommended):20" "18:18" "21:21" "22:22"
     NODE_VERSION="$SELECT"
 }
@@ -186,11 +196,21 @@ function configure_database() {
 }
 
 function configure_mariadb_version() {
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
+        DATABASE_VERSION="10.11"
+        return
+    fi
+    
     choose_delimited "`(faint "[Setup]")` `(bold "Select MariaDB version")`" "$DATABASE_VERSION" "10.11 (recommended):10.11" "10.4:10.4" "10.3:10.3"
     DATABASE_VERSION="$SELECT"
 }
 
 function configure_mysql_version() {
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
+        DATABASE_VERSION="8.4"
+        return
+    fi
+
     if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
         choose_delimited "`(faint "[Setup]")` `(bold "Select Mysql version")`" "$DATABASE_VERSION" "8.0 (recommended):8.0" "5.7:5.7"
     else
@@ -224,6 +244,11 @@ function configure_sample_data() {
         return
     fi
 
+    # skip for 5.0 tagged releases
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. && ! "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
+        return
+    fi
+    
     if [ "$DXP_EDITION" != "oss" ]; then
         choose "`(faint "[Instance]")` `(bold "Install sample data?")`" "No" "Yes"
         case "$SELECT" in
