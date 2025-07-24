@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ ! -f composer.lock ]];then
+  echo "❗️No composer.lock found                                   ❗️️"
+  echo "❗️consider using ~/ddev-ibexa-installer/bin/create_project ❗️"
+  exit
+fi
+
 if [ $# -eq 0 ]; then
   echo "❗️                                                         ❗️"
   echo "❗️No project name given, usage :                           ❗️️"
@@ -9,29 +15,21 @@ if [ $# -eq 0 ]; then
   echo "❗️~/ddev-ibexa-installer/bin/init_project -                ❗️"
   echo "❗️                                                         ❗️"
   exit
-else
-  PROJECT_NAME="$1"
 fi
 
-if [[ -f composer.lock ]];then
-  if [[ $PROJECT_NAME = '-' ]];then
-    ddev config --project-type=php
-  else
-    ddev config --project-type=php --project-name="$PROJECT_NAME"
-  fi
-  
-  if [ $? -eq 0 ]; then
-      # previous command succeeded 
-  else
-      # command failed 
-      exit
-  fi
-  
-  ddev add-on get ~/ddev-ibexa-installer
-  ddev ibexa-configurator
-  ddev ibexa-setup
-  ddev ibexa-installer
+PROJECT_NAME="$1"
+
+if [[ $PROJECT_NAME = '-' ]];then
+  ddev config --project-type=php
 else
-  echo "❗️No composer.lock found                                        ❗️️"
-  echo "❗️consider using ~/ddev-ibexa-installer/bin/create_project      ❗️"
+  ddev config --project-type=php --project-name="$PROJECT_NAME"
 fi
+
+if [ ! $? -eq 0 ]; then
+    exit
+fi
+
+ddev add-on get ~/ddev-ibexa-installer
+ddev ibexa-configurator
+ddev ibexa-setup
+ddev ibexa-installer
