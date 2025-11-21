@@ -136,14 +136,7 @@ if [ "$APP_CACHE" == "redis" ]; then
     echo "# " >> .env.local
     echo "# dxp-installer generated" >> .env.local
     echo "CACHE_POOL=cache.redis" >> .env.local
-    # redis 7
-    #echo "CACHE_DSN=redis@redis:6379" >> .env.local
-    #verbose_output ddev add-on  get ddev/ddev-redis-7
-    #echo "# " >> .ddev/redis/memory.conf
-    #echo "# dxp-installer generated" >> .ddev/redis/memory.conf
-    #echo "maxmemory-policy volatile-lfu" >> .ddev/redis/memory.conf
 
-    #redis 6
     echo "CACHE_DSN=redis:6379" >> .env.local
     ddev add-on get ddev/ddev-redis
     echo "# dxp-installer generated" > .ddev/redis/redis.conf
@@ -161,7 +154,12 @@ if [ "$SEARCH_ENGINE" == "solr" ]; then
     echo "SOLR_CORE=collection1" >> .env.local
     echo "SOLR_DSN=http://solr:8983/solr" >> .env.local
 
-    verbose_output ddev add-on  get ibexa/ddev-solr
+    verbose_output ddev add-on  get reithor/ddev-ibexa-solr
+
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
+      # @todo reithor/ddev-ibexa-solr : add solr 9 support use it for v5
+      # ddev dotenv set .ddev/.env --solr-image-version="9"
+    fi
 fi
 
 # Elasticsearch
