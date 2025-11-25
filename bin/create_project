@@ -11,4 +11,3 @@ ddev add-on get ~/ddev-ibexa-installer
 ddev ibexa-configurator
 ddev ibexa-setup
 ddev ibexa-installer
-
