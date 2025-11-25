@@ -197,6 +197,8 @@ if [ "$SEARCH_ENGINE" = "solr" ]; then
 
     ddev solr-zk upconfig -n collection1 -d /mnt/ddev_config/solr/configsets/collection1 -z localhost:9983
     ddev exec -s solr solr create -c collection1 -n collection1 -shards 1 -replicationFactor 1
+    # set env var
+    echo "SEARCH_ENGINE=solr" >> .env.local
 
     echo "✅ Created Solr Collection"
 fi
