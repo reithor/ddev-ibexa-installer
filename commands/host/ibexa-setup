@@ -150,7 +150,6 @@ echo "👷 Configured app cache: $APP_CACHE"
 if [ "$SEARCH_ENGINE" == "solr" ]; then
     echo "# " >> .env.local
     echo "# dxp-installer generated" >> .env.local
-    echo "SEARCH_ENGINE=solr" >> .env.local
     echo "SOLR_CORE=collection1" >> .env.local
     echo "SOLR_DSN=http://solr:8983/solr" >> .env.local
 
