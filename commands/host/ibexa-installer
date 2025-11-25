@@ -185,6 +185,22 @@ if [ "$SEARCH_ENGINE" = "elasticsearch" ]; then
     echo "✅ Put Elasticsearch index template"
 fi
 
+if [ "$SEARCH_ENGINE" = "solr" ]; then
+    mkdir .ddev/solr/configsets/collection1
+    chmod 777 .ddev/solr/configsets/collection1
+    cp -R vendor/ibexa/solr/src/lib/Resources/config/solr/solr.languages .ddev/solr/configsets/collection1
+    cp -R vendor/ibexa/solr/src/lib/Resources/config/solr/{managed-schema.xml,custom-fields-types-solr9.xml,language-fieldtypes.xml} .ddev/solr/configsets/collection1/
+
+    ddev solr-zk cp zk:/configs/_default/solrconfig.xml /mnt/ddev_config/solr/configsets/collection1
+    ddev solr-zk cp zk:/configs/_default/stopwords.txt /mnt/ddev_config/solr/configsets/collection1
+    ddev solr-zk cp zk:/configs/_default/synonyms.txt /mnt/ddev_config/solr/configsets/collection1
+
+    ddev solr-zk upconfig -n collection1 -d /mnt/ddev_config/solr/configsets/collection1 -z localhost:9983
+    ddev exec -s solr solr create -c collection1 -n collection1 -shards 1 -replicationFactor 1
+
+    echo "✅ Created Solr Collection"
+fi
+
 execute_with_spinner "Reindex [ibexa:reindex]" php bin/console ibexa:reindex
 echo "✅ Reindexed search data"
 
