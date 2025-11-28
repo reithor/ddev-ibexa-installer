@@ -188,8 +188,7 @@ fi
 if [ "$SEARCH_ENGINE" = "solr" ]; then
     mkdir .ddev/solr/configsets/collection1
     chmod 777 .ddev/solr/configsets/collection1
-    cp -R vendor/ibexa/solr/src/lib/Resources/config/solr/solr.languages .ddev/solr/configsets/collection1
-    cp -R vendor/ibexa/solr/src/lib/Resources/config/solr/{managed-schema.xml,custom-fields-types-solr9.xml,language-fieldtypes.xml} .ddev/solr/configsets/collection1/
+    cp -R vendor/ibexa/solr/src/lib/Resources/config/solr/* .ddev/solr/configsets/collection1/
 
     ddev exec -s solr cp -R /opt/solr/server/solr/configsets/_default/conf/{solrconfig.xml,stopwords.txt,synonyms.txt} /mnt/ddev_config/solr/configsets/collection1/
 
