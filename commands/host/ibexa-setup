@@ -150,16 +150,10 @@ echo "👷 Configured app cache: $APP_CACHE"
 if [ "$SEARCH_ENGINE" == "solr" ]; then
     echo "# " >> .env.local
     echo "# dxp-installer generated" >> .env.local
-    echo "SEARCH_ENGINE=solr" >> .env.local
     echo "SOLR_CORE=collection1" >> .env.local
     echo "SOLR_DSN=http://solr:8983/solr" >> .env.local
 
-    verbose_output ddev add-on  get reithor/ddev-ibexa-solr
-
-    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
-      # @todo reithor/ddev-ibexa-solr : add solr 9 support use it for v5
-      # ddev dotenv set .ddev/.env --solr-image-version="9"
-    fi
+    verbose_output ddev add-on get ddev/ddev-solr
 fi
 
 # Elasticsearch
