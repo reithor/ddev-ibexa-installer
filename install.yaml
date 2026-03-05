@@ -12,10 +12,10 @@ pre_install_actions:
     {{- if .platformapp.type }}
     cat <<EOF >.ddev/config.platformsh.yaml
     web_environment:
-      - INSTALL_PROFILER=false
+      - INSTALL_DEBUGBUNDLE=false
       - INSTALL_SAMPLE_DATA=false
       - INSTALL_CLOUD_CONFIG=false
-      - INSTALL_PROFILER=false
+      - INSTALL_DEBUGBUNDLE=false
       - PLATFORM_APP=true
       - PHP_VERSION={{ regexReplaceAll "^.*:" .platformapp.type "" }}
     {{- if .platformapp.relationships.rediscache }}
