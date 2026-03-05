@@ -155,7 +155,12 @@ fi
 
 # Setup Ibexa Cloud
 if [ "$INSTALL_CLOUD_CONFIG" == true ]; then
-    execute_with_spinner "Setup Ibexa Cloud [ibexa:setup --platformsh]" composer ibexa:setup --platformsh
+    if [ "$CLOUD_CONFIG" == "upsun" ]; then
+      execute_with_spinner "Setup Ibexa Cloud [require ibexa/cloud]" composer require ibexa/cloud
+      execute_with_spinner "Setup Ibexa Cloud [php bin/console ibexa:cloud:setup]" php bin/console ibexa:cloud:setup --upsun
+    else
+      execute_with_spinner "Setup Ibexa Cloud [ibexa:setup --platformsh]" composer ibexa:setup --platformsh
+    fi
     echo "✅ Installed Ibexa Cloud configuration"
     ADDED_PACKAGE=true
 fi
