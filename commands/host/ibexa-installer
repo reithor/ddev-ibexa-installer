@@ -55,7 +55,7 @@ echo "🚀 Product to be installed: `(bold "$PRODUCT_TYPE $PRODUCT_VERSION")`"
 # 1. Existing project / with all vendor files
 if [ -d vendor ]; then
     REQUIRE=NONE
-    INSTALL_PROFILER=false
+    INSTALL_DEBUGBUNDLE=false
     INSTALL_CLOUD_CONF=false
     INSTALL_SAMPLE_DATA=false
 # 2. Existing project / no vendor files
@@ -146,10 +146,10 @@ if [[ "$INSTALL_SAMPLE_DATA" == true && "$PRODUCT_VERSION" != *"3.3"* ]]; then
 
 fi
 
-# Install profiler
-if [ "$INSTALL_PROFILER" == true ]; then
-    execute_with_spinner "Require [symfony/profiler-pack]" composer require --dev symfony/profiler-pack --no-scripts --no-interaction
-    echo "✅ Installed Symfony Profiler"
+# Install debug-bundle
+if [ "$INSTALL_DEBUGBUNDLE" == true ]; then
+    execute_with_spinner "Require [symfony/debug-bundle]" composer require symfony/debug-bundle --no-scripts --no-interaction
+    echo "✅ Installed Symfony Debug Bundle"
     ADDED_PACKAGE=true
 fi
 
