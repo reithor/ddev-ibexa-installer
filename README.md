@@ -25,7 +25,7 @@ During install you can change the following parameters for the new project:
 - Search engine: Elasticsearch, Solr, Legacy
 
 ## Additional Features
-- Install Symfony Debug Bundle
+- Install Symfony Profiler
 - Configure app environment: prod or dev
 - Install Ibexa Cloud configuration
 - Prompt for product edition

@@ -12,7 +12,7 @@ source .ddev/commands/web/.utils
 #
 
 LABEL_INSTALL_SAMPLE_DATA="Yes"
-LABEL_INSTALL_DEBUGBUNDLE="Yes"
+LABEL_INSTALL_PROFILER="Yes"
 IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 
 [ -z "$PHP_VERSION" ] && PHP_VERSION="8.3"
@@ -24,7 +24,7 @@ IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 [ -z "$APP_CACHE" ] && APP_CACHE="redis"
 [ -z "$SEARCH_ENGINE" ] && SEARCH_ENGINE="legacy"
 [ -z "$INSTALL_SAMPLE_DATA" ] && INSTALL_SAMPLE_DATA=false
-[ -z "$INSTALL_DEBUGBUNDLE" ] && INSTALL_DEBUGBUNDLE=true
+[ -z "$INSTALL_PROFILER" ] && INSTALL_PROFILER=true
 [ -z "$APP_ENV" ] && APP_ENV="dev"
 [ -z "$INSTALL_CLOUD_CONFIG" ] && INSTALL_CLOUD_CONFIG=true
 [ -z "$PLATFORM_APP" ] && PLATFORM_APP=false
@@ -37,9 +37,9 @@ fi
 function detect_installation() {
     if [ -f composer.lock ]; then
         REQUIRE=NONE
-        # debug-bundle loaded from composer.json
-        INSTALL_DEBUGBUNDLE=false
-        LABEL_INSTALL_DEBUGBUNDLE="No"
+        # profiler loaded from composer.json
+        INSTALL_PROFILER=false
+        LABEL_INSTALL_PROFILER="No"
         # fixtures loaded from composer.json
         INSTALL_SAMPLE_DATA=false
         LABEL_INSTALL_SAMPLE_DATA="No"
@@ -268,20 +268,20 @@ function configure_sample_data() {
     fi
 }
 
-function configure_debugbundle() {
+function configure_profiler() {
     if [ "$REQUIRE" == "NONE" ]; then
         return
     fi
 
-    choose "`(faint "[Instance]")` `(bold "Install Symfony Debug Bundle?")`" "Yes" "No"
+    choose "`(faint "[Instance]")` `(bold "Install Symfony profiler?")`" "Yes" "No"
     case "$SELECT" in
         "Yes")
-            INSTALL_DEBUGBUNDLE=true
-            LABEL_INSTALL_DEBUGBUNDLE="Yes"
+            INSTALL_PROFILER=true
+            LABEL_INSTALL_PROFILER="Yes"
             ;;
         "No")
-            INSTALL_DEBUGBUNDLE=false
-            LABEL_INSTALL_DEBUGBUNDLE="No"
+            INSTALL_PROFILER=false
+            LABEL_INSTALL_PROFILER="No"
             ;;
     esac
 }
@@ -355,7 +355,7 @@ function print_selected_settings() {
         "" \
         "`(faint "Install sample data:")` `(bold $(format_bool "$INSTALL_SAMPLE_DATA"))`" \
         "`(faint "Install Ibexa Cloud config:")` `(bold $(format_bool "$INSTALL_CLOUD_CONFIG"))`" \
-        "`(faint "Install Symfony Debug Bundle:")` `(bold $(format_bool "$INSTALL_DEBUGBUNDLE"))`" \
+        "`(faint "Install Symfony Profiler:")` `(bold $(format_bool "$INSTALL_PROFILER"))`" \
         "`(faint "App environment:")` `(bold "$APP_ENV")`")
 
     ROW_1=$(gum join "$TABLE_APPLICATION" "$TABLE_SERVICES")
@@ -374,7 +374,7 @@ function select_configuration() {
     configure_app_cache
     configure_search_engine
     configure_sample_data
-    configure_debugbundle
+    configure_profiler
     configure_app_env
     configure_cloud
 
@@ -399,7 +399,7 @@ function save_settings_file() {
         declare -p APP_CACHE
         declare -p SEARCH_ENGINE
         declare -p INSTALL_SAMPLE_DATA
-        declare -p INSTALL_DEBUGBUNDLE
+        declare -p INSTALL_PROFILER
         declare -p APP_ENV
         declare -p HTTP_SERVER
         declare -p INSTALL_CLOUD_CONFIG
