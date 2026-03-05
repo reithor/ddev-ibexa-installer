@@ -27,6 +27,7 @@ IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 [ -z "$INSTALL_PROFILER" ] && INSTALL_PROFILER=true
 [ -z "$APP_ENV" ] && APP_ENV="dev"
 [ -z "$INSTALL_CLOUD_CONFIG" ] && INSTALL_CLOUD_CONFIG=true
+[ -z "$CLOUD_CONFIG" ] && CLOUD_CONFIG="upsun"
 [ -z "$PLATFORM_APP" ] && PLATFORM_APP=false
 
 if [ -f "$INSTANCE_SETTINGS_FILE" ]; then
@@ -145,7 +146,7 @@ function configure_release() {
 
 function configure_php() {
     if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
-        PHP_VERSION="8.3"        
+        PHP_VERSION="8.3"
         return
     fi
 
@@ -200,7 +201,7 @@ function configure_mariadb_version() {
         DATABASE_VERSION="10.11"
         return
     fi
-    
+
     choose_delimited "`(faint "[Setup]")` `(bold "Select MariaDB version")`" "$DATABASE_VERSION" "10.11 (recommended):10.11" "10.4:10.4" "10.3:10.3"
     DATABASE_VERSION="$SELECT"
 }
@@ -248,7 +249,7 @@ function configure_sample_data() {
     if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. && ! "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
         return
     fi
-    
+
     if [ "$DXP_EDITION" != "oss" ]; then
         choose "`(faint "[Instance]")` `(bold "Install sample data?")`" "No" "Yes"
         case "$SELECT" in
@@ -299,8 +300,14 @@ function configure_app_env() {
 }
 
 function configure_cloud() {
-    if [ "$REQUIRE_NONE" == true ]; then
+    if [ "$REQUIRE" == "NONE" ]; then
         return
+    fi
+
+    if [[ "$PRODUCT_VERSION" =~ ^~5\.0\. || "$PRODUCT_VERSION" =~ ^(v)?5\.0\.([x6-9]|[1-9][0-9]+) ]]; then
+        CLOUD_CONFIG="upsun"
+    else
+        CLOUD_CONFIG="platformsh"
     fi
 
     choose "`(faint "[Instance]")` `(bold "Install Ibexa Cloud configuration?")`" "Yes (recommended)" "No"
@@ -403,6 +410,8 @@ function save_settings_file() {
         declare -p APP_ENV
         declare -p HTTP_SERVER
         declare -p INSTALL_CLOUD_CONFIG
+        declare -p CLOUD_CONFIG
+
     } > "$INSTANCE_SETTINGS_FILE"
 }
 
