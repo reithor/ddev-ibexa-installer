@@ -19,9 +19,9 @@ ddev add-on get ~/ddev-ibexa-installer
 cat <<EOF > .ddev/.ibexa-instance-settings
 declare -- DXP_EDITION="experience"
 declare -- PRODUCT_TYPE="Ibexa DXP Experience"
-declare -- PRODUCT_VERSION="~4.6.x-dev"
-declare -- PHP_VERSION="8.3"
-declare -- NODE_VERSION="20"
+declare -- PRODUCT_VERSION="~5.0.x-dev"
+declare -- PHP_VERSION="8.4"
+declare -- NODE_VERSION="22"
 declare -- DATABASE="mariadb"
 declare -- DATABASE_VERSION="10.11"
 declare -- HTTP_CACHE="varnish"
@@ -32,6 +32,8 @@ declare -- INSTALL_PROFILER="true"
 declare -- APP_ENV="dev"
 declare -- HTTP_SERVER="nginx-fpm"
 declare -- INSTALL_CLOUD_CONFIG="true"
+declare -- CLOUD_CONFIG="upsun"
+
 EOF
 
 # remove config name - as it by default uses the current directory

@@ -15,7 +15,7 @@ LABEL_INSTALL_SAMPLE_DATA="Yes"
 LABEL_INSTALL_PROFILER="Yes"
 IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 
-[ -z "$PHP_VERSION" ] && PHP_VERSION="8.3"
+[ -z "$PHP_VERSION" ] && PHP_VERSION="8.4"
 [ -z "$DATABASE" ] && DATABASE="mariadb"
 [ -z "$DATABASE_VERSION" ] && DATABASE_VERSION="10.11"
 [ -z "$NODE_VERSION" ] && NODE_VERSION="22"
@@ -145,16 +145,17 @@ function configure_release() {
 }
 
 function configure_php() {
-    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
+    if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
+        choose_delimited "`(faint "[Setup]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1" "7.4:7.4"
+    elif [[ "$PRODUCT_VERSION" == *"4.6."* ]]; then
+        choose_delimited "`(faint "[Setup]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1"
+    elif [[ "$PRODUCT_VERSION" =~ ^~5\.0\. || "$PRODUCT_VERSION" =~ ^(v)?5\.0\.([x6-9]|[1-9][0-9]+) ]]; then
+        choose_delimited "`(faint "[Setup]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.4 (recommended):8.4" "8.3:8.3"
+    else
         PHP_VERSION="8.3"
         return
     fi
 
-    if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
-      choose_delimited "`(faint "[Setup]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1" "7.4:7.4"
-    else
-      choose_delimited "`(faint "[Setup]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1"
-    fi
     PHP_VERSION="$SELECT"
 }
 
@@ -162,9 +163,12 @@ function configure_node() {
     if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
         NODE_VERSION="22"
         return
+    elif [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
+        NODE_VERSION="18"
+        return
+    else
+        choose_delimited "`(faint "[Setup]")` `(bold "Select Node version")`" "$NODE_VERSION" "22 (recommended):22" "18:18" "20:20"
     fi
-
-    choose_delimited "`(faint "[Setup]")` `(bold "Select Node version")`" "$NODE_VERSION" "20 (recommended):20" "18:18" "21:21" "22:22"
     NODE_VERSION="$SELECT"
 }
 
