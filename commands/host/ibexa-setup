@@ -154,6 +154,7 @@ if [ "$SEARCH_ENGINE" == "solr" ]; then
     echo "SOLR_DSN=http://solr:8983/solr" >> .env.local
 
     verbose_output ddev add-on get ddev/ddev-solr
+    verbose_output ddev dotenv set .ddev/.env.solr --solr-opts="-Dsolr.autoSoftCommit.maxTime=20"
 fi
 
 # Elasticsearch

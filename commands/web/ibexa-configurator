@@ -15,18 +15,18 @@ LABEL_INSTALL_SAMPLE_DATA="Yes"
 LABEL_INSTALL_PROFILER="Yes"
 IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 
-[ -z "$PHP_VERSION" ] && PHP_VERSION="8.4"
+[ -z "$PHP_VERSION" ] && PHP_VERSION="8.3"
 [ -z "$DATABASE" ] && DATABASE="mariadb"
 [ -z "$DATABASE_VERSION" ] && DATABASE_VERSION="10.11"
 [ -z "$NODE_VERSION" ] && NODE_VERSION="22"
 [ -z "$HTTP_CACHE" ] && HTTP_CACHE="symfony"
 [ -z "$HTTP_SERVER" ] && HTTP_SERVER="nginx-fpm"
-[ -z "$APP_CACHE" ] && APP_CACHE="redis"
+[ -z "$APP_CACHE" ] && APP_CACHE="filesystem"
 [ -z "$SEARCH_ENGINE" ] && SEARCH_ENGINE="legacy"
 [ -z "$INSTALL_SAMPLE_DATA" ] && INSTALL_SAMPLE_DATA=false
 [ -z "$INSTALL_PROFILER" ] && INSTALL_PROFILER=true
 [ -z "$APP_ENV" ] && APP_ENV="dev"
-[ -z "$INSTALL_CLOUD_CONFIG" ] && INSTALL_CLOUD_CONFIG=true
+[ -z "$INSTALL_CLOUD_CONFIG" ] && INSTALL_CLOUD_CONFIG=false
 [ -z "$CLOUD_CONFIG" ] && CLOUD_CONFIG="upsun"
 [ -z "$PLATFORM_APP" ] && PLATFORM_APP=false
 
@@ -146,16 +146,15 @@ function configure_release() {
 
 function configure_php() {
     if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
-        choose_delimited "`(faint "[Setup]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1" "7.4:7.4"
+        choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1" "7.4:7.4"
     elif [[ "$PRODUCT_VERSION" == *"4.6."* ]]; then
-        choose_delimited "`(faint "[Setup]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1"
+        choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1"
     elif [[ "$PRODUCT_VERSION" =~ ^~5\.0\. || "$PRODUCT_VERSION" =~ ^(v)?5\.0\.([x6-9]|[1-9][0-9]+) ]]; then
-        choose_delimited "`(faint "[Setup]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.4 (recommended):8.4" "8.3:8.3"
+        choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3:8.3" "8.4:8.4"
     else
         PHP_VERSION="8.3"
         return
     fi
-
     PHP_VERSION="$SELECT"
 }
 
@@ -167,23 +166,23 @@ function configure_node() {
         NODE_VERSION="18"
         return
     else
-        choose_delimited "`(faint "[Setup]")` `(bold "Select Node version")`" "$NODE_VERSION" "22 (recommended):22" "18:18" "20:20"
+        choose_delimited "`(faint "[Environment]")` `(bold "Select Node version")`" "$NODE_VERSION" "22 (recommended):22" "18:18" "20:20"
     fi
     NODE_VERSION="$SELECT"
 }
 
 function configure_http_server() {
-    choose_delimited "`(faint "[Setup]")` `(bold "Select HTTP server")`" "$HTTP_SERVER" "nginx (recommended):nginx-fpm" "Apache:apache-fpm"
+    choose_delimited "`(faint "[Environment]")` `(bold "Select HTTP server")`" "$HTTP_SERVER" "nginx (recommended):nginx-fpm" "Apache (untested):apache-fpm"
     HTTP_SERVER="$SELECT"
 }
 
 function configure_http_cache() {
-    choose_delimited "`(faint "[Setup]")` `(bold "Select HTTP cache")`" "$HTTP_CACHE" "Symfony:symfony" "Varnish (recommended):varnish"
+    choose_delimited "`(faint "[Services]")` `(bold "Select HTTP cache")`" "$HTTP_CACHE" "Symfony:symfony" "Varnish:varnish"
     HTTP_CACHE="$SELECT"
 }
 
 function configure_database() {
-    choose_delimited "`(faint "[Setup]")` `(bold "Select database platform")`" "$DATABASE" "MariaDB (recommended):mariadb" "MySQL:mysql" "PostgreSQL:postgres"
+    choose_delimited "`(faint "[Environment]")` `(bold "Select database platform")`" "$DATABASE" "MariaDB (recommended):mariadb" "MySQL:mysql" "PostgreSQL:postgres"
     case "$SELECT" in
         "mariadb")
             DATABASE="mariadb"
@@ -206,7 +205,7 @@ function configure_mariadb_version() {
         return
     fi
 
-    choose_delimited "`(faint "[Setup]")` `(bold "Select MariaDB version")`" "$DATABASE_VERSION" "10.11 (recommended):10.11" "10.4:10.4" "10.3:10.3"
+    choose_delimited "`(faint "[Environment]")` `(bold "Select MariaDB version")`" "$DATABASE_VERSION" "10.11 (recommended):10.11" "10.4:10.4" "10.3:10.3"
     DATABASE_VERSION="$SELECT"
 }
 
@@ -217,30 +216,29 @@ function configure_mysql_version() {
     fi
 
     if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
-        choose_delimited "`(faint "[Setup]")` `(bold "Select Mysql version")`" "$DATABASE_VERSION" "8.0 (recommended):8.0" "5.7:5.7"
+        choose_delimited "`(faint "[Environment]")` `(bold "Select Mysql version")`" "$DATABASE_VERSION" "8.0 (recommended):8.0" "5.7:5.7"
     else
-        choose_delimited "`(faint "[Setup]")` `(bold "Select Mysql version")`" "$DATABASE_VERSION" "8.4 (recommended):8.4" "8.0:8.0"
+        choose_delimited "`(faint "[Environment]")` `(bold "Select Mysql version")`" "$DATABASE_VERSION" "8.4 (recommended):8.4" "8.0:8.0"
     fi
     DATABASE_VERSION="$SELECT"
 }
 
 function configure_postgres_version() {
-    choose_delimited "`(faint "[Setup]")` `(bold "Select PostgreSQL version")`" "$DATABASE_VERSION" "16 (recommended):16" "15:15" "14:14" "13:13" "12:12" "11:11" "10:10"
+    choose_delimited "`(faint "[Environment]")` `(bold "Select PostgreSQL version")`" "$DATABASE_VERSION" "16 (recommended):16" "15:15" "14:14" "13:13" "12:12" "11:11" "10:10"
     DATABASE_VERSION="$SELECT"
 }
 
 function configure_app_cache() {
-    choose_delimited "`(faint "[Setup]")` `(bold "Select application cache")`" "$APP_CACHE" "Redis (recommended):redis" "Memcached:memcached" "Filesystem:filesystem"
+    choose_delimited "`(faint "[Services]")` `(bold "Select application cache")`" "$APP_CACHE" "Filesystem:filesystem" "Redis:redis" "Memcached (untested):memcached"
     APP_CACHE="$SELECT"
 }
 
 function configure_search_engine() {
     if [ "$DXP_EDITION" != "oss" ]; then
-        choose_delimited "`(faint "[Setup]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Elasticsearch (recommended):elasticsearch" "Solr:solr"
+        choose_delimited "`(faint "[Services]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Elasticsearch (recommended):elasticsearch" "Solr:solr"
     else
-        choose_delimited "`(faint "[Setup]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Solr (recommended):solr"
+        choose_delimited "`(faint "[Services]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Solr (recommended):solr"
     fi
-
     SEARCH_ENGINE="$SELECT"
 }
 
@@ -255,7 +253,7 @@ function configure_sample_data() {
     fi
 
     if [ "$DXP_EDITION" != "oss" ]; then
-        choose "`(faint "[Instance]")` `(bold "Install sample data?")`" "No" "Yes"
+        choose "`(faint "[Extras]")` `(bold "Install sample data?")`" "No" "Yes"
         case "$SELECT" in
             "No")
                 INSTALL_SAMPLE_DATA=false
@@ -278,7 +276,7 @@ function configure_profiler() {
         return
     fi
 
-    choose "`(faint "[Instance]")` `(bold "Install Symfony profiler?")`" "Yes" "No"
+    choose "`(faint "[Extras]")` `(bold "Install Symfony profiler?")`" "Yes" "No"
     case "$SELECT" in
         "Yes")
             INSTALL_PROFILER=true
@@ -292,15 +290,8 @@ function configure_profiler() {
 }
 
 function configure_app_env() {
-    choose "`(faint "[Instance]")` `(bold "Select app environment")`" "prod (recommended)" "dev"
-    case "$SELECT" in
-        "prod (recommended)")
-            APP_ENV=prod
-            ;;
-        "dev")
-            APP_ENV=dev
-            ;;
-    esac
+    choose_delimited "`(faint "[Extras]")` `(bold "Select app environment")`" "$APP_ENV" "dev:dev" "prod:prod"
+    APP_ENV="$SELECT"
 }
 
 function configure_cloud() {
@@ -314,15 +305,8 @@ function configure_cloud() {
         CLOUD_CONFIG="platformsh"
     fi
 
-    choose "`(faint "[Instance]")` `(bold "Install Ibexa Cloud configuration?")`" "Yes (recommended)" "No"
-    case "$SELECT" in
-        "Yes (recommended)")
-            INSTALL_CLOUD_CONFIG=true
-            ;;
-        "No")
-            INSTALL_CLOUD_CONFIG=false
-            ;;
-    esac
+    choose_delimited "`(faint "[Extras]")` `(bold "Install Ibexa Cloud configuration?")`" "$INSTALL_CLOUD_CONFIG" "Yes (recommended):true" "No:false"
+    INSTALL_CLOUD_CONFIG="$SELECT"
 }
 
 function format_bool() {
