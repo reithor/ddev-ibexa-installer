@@ -26,7 +26,7 @@ IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 [ -z "$INSTALL_SAMPLE_DATA" ] && INSTALL_SAMPLE_DATA=false
 [ -z "$INSTALL_PROFILER" ] && INSTALL_PROFILER=true
 [ -z "$APP_ENV" ] && APP_ENV="dev"
-[ -z "$INSTALL_CLOUD_CONFIG" ] && INSTALL_CLOUD_CONFIG=true
+[ -z "$INSTALL_CLOUD_CONFIG" ] && INSTALL_CLOUD_CONFIG=false
 [ -z "$CLOUD_CONFIG" ] && CLOUD_CONFIG="upsun"
 [ -z "$PLATFORM_APP" ] && PLATFORM_APP=false
 
