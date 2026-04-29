@@ -56,7 +56,7 @@ echo "🚀 Product to be installed: `(bold "$PRODUCT_TYPE $PRODUCT_VERSION")`"
 if [ -d vendor ]; then
     REQUIRE=NONE
     INSTALL_PROFILER=false
-    INSTALL_CLOUD_CONF=false
+    INSTALL_CLOUD_CONFIG=false
     INSTALL_SAMPLE_DATA=false
 # 2. Existing project / no vendor files
 elif [ -f composer.lock ]; then
@@ -99,7 +99,7 @@ else
     mv .env.local .ddev/.env.local
     ddev composer create-project -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
     
-    if [[ "$PHP_VERSION" = "8.3" && ( "$PRODUCT_VERSION" =~ ^(~|v)?5\.0  || "$PRODUCT_VERSION" =~ ^(~|v)?4\.6 )  ]]; then
+    if [[ "$PHP_VERSION" = "8.3" && ( "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0  || "$PRODUCT_VERSION" =~ ^(~|v)?4\.6 )  ]]; then
         COMPOSER_MODE=install
         REQUIRE_MODE="--no-scripts --no-plugins --no-install --no-interaction --quiet"
     else
@@ -132,6 +132,8 @@ ADDED_PACKAGE=false
 if [[ "$INSTALL_SAMPLE_DATA" == true && "$PRODUCT_VERSION" != *"3.3"* ]]; then
     if [[ "$PRODUCT_VERSION" = *"4.6"* ]]; then
         FIXTURES_VERSION=~4.6.x-dev
+    elif [[ "$PRODUCT_VERSION" = *"6.0"* ]]; then
+        FIXTURES_VERSION=~6.0.x-dev
     else
         FIXTURES_VERSION=~5.0.x-dev
     fi

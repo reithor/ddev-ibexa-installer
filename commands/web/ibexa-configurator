@@ -134,7 +134,7 @@ function configure_release() {
         return
     fi
 
-    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION" "5.0 LTS:~5.0.0" "5.0.x dev:~5.0.x-dev" "5.0.x release:5.0.x release" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "4.6.x release:4.6.x release" "3.3 LTS:~3.3.0" "3.3.x release:3.3.x release"
+    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "5.0 LTS" "6.0.x dev:~6.0.x-dev" "5.0 LTS:~5.0.0" "5.0.x dev:~5.0.x-dev" "5.0.x release:5.0.x release" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "4.6.x release:4.6.x release" "3.3 LTS:~3.3.0" "3.3.x release:3.3.x release"
     if [[ "$SELECT" =~ .*"x release" ]]; then
         PRODUCT_VERSION=$SELECT
         PRODUCT_VERSION="${SELECT/x release/}"
@@ -159,7 +159,7 @@ function configure_php() {
 }
 
 function configure_node() {
-    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0\. ]]; then
         NODE_VERSION="22"
         return
     elif [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
@@ -305,7 +305,7 @@ function configure_cloud() {
         CLOUD_CONFIG="platformsh"
     fi
 
-    choose_delimited "`(faint "[Extras]")` `(bold "Install Ibexa Cloud configuration?")`" "$INSTALL_CLOUD_CONFIG" "Yes (recommended):true" "No:false"
+    choose_delimited "`(faint "[Extras]")` `(bold "Install Ibexa Cloud configuration?")`" "No" "Yes:true" "No:false"
     INSTALL_CLOUD_CONFIG="$SELECT"
 }
 

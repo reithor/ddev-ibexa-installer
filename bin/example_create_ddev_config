@@ -19,7 +19,7 @@ ddev add-on get ~/ddev-ibexa-installer
 cat <<EOF > .ddev/.ibexa-instance-settings
 declare -- DXP_EDITION="experience"
 declare -- PRODUCT_TYPE="Ibexa DXP Experience"
-declare -- PRODUCT_VERSION="~5.0.x-dev"
+declare -- PRODUCT_VERSION="~5.0.0"
 declare -- PHP_VERSION="8.4"
 declare -- NODE_VERSION="22"
 declare -- DATABASE="mariadb"
