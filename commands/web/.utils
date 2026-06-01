@@ -52,7 +52,7 @@ function execute_with_spinner() {
     TITLE="$1"
     shift
 
-    if [ "$VERBOSE_INSTALL" = true ]; then
+    if [[ "$VERBOSE_INSTALL" == true ]]; then
         "$@"
     else
         gum spin --title "$TITLE" --timeout 0 -- "$@"

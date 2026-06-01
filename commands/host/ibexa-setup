@@ -7,16 +7,16 @@
 
 source .ddev/commands/host/.utils
 
-[ -z "$SETTINGS_FILE" ] && SETTINGS_FILE="./.ddev/.ibexa-instance-settings"
-[ -z "$PROVISION_FILE_GENERAL" ] && PROVISION_FILE_GENERAL="./.ddev/.ibexa-setup-general-provisioned"
-[ -z "$PROVISION_FILE_SERVICES" ] && PROVISION_FILE_SERVICES="./.ddev/.ibexa-setup-services-provisioned"
-[ -z "$VERBOSE_INSTALL" ] && VERBOSE_INSTALL=false
+[[ -z "$SETTINGS_FILE" ]] && SETTINGS_FILE="./.ddev/.ibexa-instance-settings"
+[[ -z "$PROVISION_FILE_GENERAL" ]] && PROVISION_FILE_GENERAL="./.ddev/.ibexa-setup-general-provisioned"
+[[ -z "$PROVISION_FILE_SERVICES" ]] && PROVISION_FILE_SERVICES="./.ddev/.ibexa-setup-services-provisioned"
+[[ -z "$VERBOSE_INSTALL" ]] && VERBOSE_INSTALL=false
 
-if [ "$VERBOSE_INSTALL" != false ] && [ ! -f "$PROVISION_FILE_GENERAL" ] && [ ! -f "$PROVISION_FILE_SERVICES" ]; then
+if [[ "$VERBOSE_INSTALL" != false && ! -f "$PROVISION_FILE_GENERAL" && ! -f "$PROVISION_FILE_SERVICES" ]]; then
     clear
 fi
 
-if [ ! -f "$SETTINGS_FILE" ]; then
+if [[ ! -f "$SETTINGS_FILE" ]]; then
     echo "Settings file does not exist, run ddev ibexa-configurator first."
     exit 1
 fi
@@ -25,7 +25,7 @@ source $SETTINGS_FILE
 
 YAML_TAB="    "
 
-if [ ! -f "$PROVISION_FILE_GENERAL" ]; then
+if [[ ! -f "$PROVISION_FILE_GENERAL" ]]; then
     echo "# " >> .env.local
     echo "# dxp-installer generated" >> .env.local
     # Project name
@@ -40,7 +40,7 @@ if [ ! -f "$PROVISION_FILE_GENERAL" ]; then
     echo "👷 Configured Node version: $NODE_VERSION"
 
     # Web Server
-    if [ "$HTTP_SERVER" = "apache-fpm" ]
+    if [[ "$HTTP_SERVER" == "apache-fpm" ]]
     then
         echo "webserver_type: $HTTP_SERVER" > .ddev/config.http.yaml
     fi
@@ -54,7 +54,7 @@ if [ ! -f "$PROVISION_FILE_GENERAL" ]; then
 
     # App env
     echo "APP_ENV=$APP_ENV" >> .env.local
-    if [ "$APP_ENV" = "prod" ]; then
+    if [[ "$APP_ENV" == "prod" ]]; then
         echo "APP_DEBUG=0" >> .env.local
     else
         echo "APP_DEBUG=1" >> .env.local
@@ -68,7 +68,7 @@ if [ ! -f "$PROVISION_FILE_GENERAL" ]; then
     verbose_output ddev restart -y
 fi
 
-if [ -f "$PROVISION_FILE_SERVICES" ]; then
+if [[ -f "$PROVISION_FILE_SERVICES" ]]; then
     exit 0
 fi
 
@@ -84,11 +84,11 @@ DB_COLLATION=utf8mb4_unicode_520_ci
 
 ddev dotenv set .ddev/.env --dxp-release="$PRODUCT_VERSION"
 
-if [ "$DATABASE" == "mariadb" ]; then
+if [[ "$DATABASE" == "mariadb" ]]; then
     DB_VERSION=mariadb-`ddev exec -s db mysql -V | awk '{print $5}' | sed 's/-.*//'`
 fi
 
-if [ "$DATABASE" == "postgres" ]; then
+if [[ "$DATABASE" == "postgres" ]]; then
     DB_PORT=5432
     DB_SCHEME=postgresql
     DB_CHARSET=utf8
@@ -104,7 +104,7 @@ echo "DATABASE_COLLATION=${DB_COLLATION}" >> .env.local
 
 echo "👷 Saved database details in .env.local"
 
-if [ "$HTTP_CACHE" == "varnish" ]; then
+if [[ "$HTTP_CACHE" == "varnish" ]]; then
     echo "# " >> .env.local
     echo "# dxp-installer generated" >> .env.local
     echo "TRUSTED_PROXIES=REMOTE_ADDR" >> .env.local
@@ -122,7 +122,7 @@ fi
 echo "👷 Configured HTTP cache: $HTTP_CACHE"
 
 # Memcached
-if [ "$APP_CACHE" == "memcached" ]; then
+if [[ "$APP_CACHE" == "memcached" ]]; then
     echo "# " >> .env.local
     echo "# dxp-installer generated" >> .env.local
     echo "CACHE_POOL=\"cache.memcached\"" >> .env.local
@@ -132,7 +132,7 @@ if [ "$APP_CACHE" == "memcached" ]; then
 fi
 
 # Redis
-if [ "$APP_CACHE" == "redis" ]; then
+if [[ "$APP_CACHE" == "redis" ]]; then
     echo "# " >> .env.local
     echo "# dxp-installer generated" >> .env.local
     echo "CACHE_POOL=cache.redis" >> .env.local
@@ -147,7 +147,7 @@ fi
 echo "👷 Configured app cache: $APP_CACHE"
 
 # Solr
-if [ "$SEARCH_ENGINE" == "solr" ]; then
+if [[ "$SEARCH_ENGINE" == "solr" ]]; then
     echo "# " >> .env.local
     echo "# dxp-installer generated" >> .env.local
     echo "SOLR_CORE=collection1" >> .env.local

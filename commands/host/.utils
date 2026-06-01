@@ -7,7 +7,7 @@ export INSTANCE_SETTINGS_FILE=".ddev/.ibexa-instance-settings"
 export VERBOSE_INSTALL=$(ddev exec printenv VERBOSE_INSTALL)
 
 function verbose_output() {
-    if [ "$VERBOSE_INSTALL" = true ]; then
+    if [[ "$VERBOSE_INSTALL" == true ]]; then
         "$@"
     else
         "$@" > /dev/null
@@ -18,7 +18,7 @@ function execute_with_spinner() {
     TITLE="$1"
     shift
 
-    if [ "$VERBOSE_INSTALL" = true ]; then
+    if [[ "$VERBOSE_INSTALL" == true ]]; then
         ddev exec "$@"
     else
         ddev gum spin --title "$TITLE" --timeout 0s -- "$@"
