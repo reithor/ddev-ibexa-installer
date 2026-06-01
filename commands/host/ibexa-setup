@@ -158,12 +158,20 @@ if [ "$SEARCH_ENGINE" == "solr" ]; then
 fi
 
 # Elasticsearch
-if [ "$SEARCH_ENGINE" == "elasticsearch" ]; then
+if [[ "$SEARCH_ENGINE" =~ ^elasticsearch ]]; then
     echo "# " >> .env.local
     echo "# dxp-installer generated" >> .env.local
     echo "SEARCH_ENGINE=elasticsearch" >> .env.local
     echo "ELASTICSEARCH_DSN=http://elasticsearch:9200" >> .env.local
     verbose_output ddev add-on  get ddev/ddev-elasticsearch
+
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0 || "$SEARCH_ENGINE" == "elasticsearch8" ]]; then
+        cp .ddev/elasticsearch/docker-compose.elasticsearch8.yaml .ddev/
+        verbose_output ddev dotenv set .ddev/.env.elasticsearch --elasticsearch-docker-image=elasticsearch:8.19.0
+    else
+        cp .ddev/elasticsearch/docker-compose.elasticsearch7.yaml .ddev/
+        verbose_output ddev dotenv set .ddev/.env.elasticsearch --elasticsearch-docker-image=elasticsearch:7.17.14
+    fi
 fi
 
 echo "👷 Configured search engine: $SEARCH_ENGINE"
