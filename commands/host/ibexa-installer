@@ -185,7 +185,7 @@ else
 fi
 echo "✅ Database installed"
 
-if [[ "$SEARCH_ENGINE" == "elasticsearch" ]]; then
+if [[ "$SEARCH_ENGINE" =~ ^elasticsearch ]]; then
     if [[ "$SEARCH_ENGINE" == "elasticsearch8" && "$PRODUCT_VERSION" == *"4.6"* ]]; then
       execute_with_spinner "Require elasticsearch8 for v4.6" composer require ibexa/elasticsearch8 --with-all-dependencies
     fi
