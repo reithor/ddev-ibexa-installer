@@ -15,28 +15,28 @@ LABEL_INSTALL_SAMPLE_DATA="Yes"
 LABEL_INSTALL_PROFILER="Yes"
 IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 
-[ -z "$PHP_VERSION" ] && PHP_VERSION="8.3"
-[ -z "$DATABASE" ] && DATABASE="mariadb"
-[ -z "$DATABASE_VERSION" ] && DATABASE_VERSION="10.11"
-[ -z "$NODE_VERSION" ] && NODE_VERSION="22"
-[ -z "$HTTP_CACHE" ] && HTTP_CACHE="symfony"
-[ -z "$HTTP_SERVER" ] && HTTP_SERVER="nginx-fpm"
-[ -z "$APP_CACHE" ] && APP_CACHE="filesystem"
-[ -z "$SEARCH_ENGINE" ] && SEARCH_ENGINE="legacy"
-[ -z "$INSTALL_SAMPLE_DATA" ] && INSTALL_SAMPLE_DATA=false
-[ -z "$INSTALL_PROFILER" ] && INSTALL_PROFILER=true
-[ -z "$APP_ENV" ] && APP_ENV="dev"
-[ -z "$INSTALL_CLOUD_CONFIG" ] && INSTALL_CLOUD_CONFIG=false
-[ -z "$CLOUD_CONFIG" ] && CLOUD_CONFIG="upsun"
-[ -z "$PLATFORM_APP" ] && PLATFORM_APP=false
+[[ -z "$PHP_VERSION" ]] && PHP_VERSION="8.3"
+[[ -z "$DATABASE" ]] && DATABASE="mariadb"
+[[ -z "$DATABASE_VERSION" ]] && DATABASE_VERSION="10.11"
+[[ -z "$NODE_VERSION" ]] && NODE_VERSION="22"
+[[ -z "$HTTP_CACHE" ]] && HTTP_CACHE="symfony"
+[[ -z "$HTTP_SERVER" ]] && HTTP_SERVER="nginx-fpm"
+[[ -z "$APP_CACHE" ]] && APP_CACHE="filesystem"
+[[ -z "$SEARCH_ENGINE" ]] && SEARCH_ENGINE="legacy"
+[[ -z "$INSTALL_SAMPLE_DATA" ]] && INSTALL_SAMPLE_DATA=false
+[[ -z "$INSTALL_PROFILER" ]] && INSTALL_PROFILER=true
+[[ -z "$APP_ENV" ]] && APP_ENV="dev"
+[[ -z "$INSTALL_CLOUD_CONFIG" ]] && INSTALL_CLOUD_CONFIG=false
+[[ -z "$CLOUD_CONFIG" ]] && CLOUD_CONFIG="upsun"
+[[ -z "$PLATFORM_APP" ]] && PLATFORM_APP=false
 
-if [ -f "$INSTANCE_SETTINGS_FILE" ]; then
+if [[ -f "$INSTANCE_SETTINGS_FILE" ]]; then
     # Nothing to do
     exit 0
 fi
 
 function detect_installation() {
-    if [ -f composer.lock ]; then
+    if [[ -f composer.lock ]]; then
         REQUIRE=NONE
         # profiler loaded from composer.json
         INSTALL_PROFILER=false
@@ -50,10 +50,10 @@ function detect_installation() {
 }
 
 function detect_version() {
-    if [ "$DXP_EDITION" != "website" ] && [ -f composer.lock ]; then
+    if [[ "$DXP_EDITION" != "website" && -f composer.lock ]]; then
         MIN_STABILITY="`(jq -r '."minimum-stability"' composer.lock)`"
         PRODUCT_VERSION="`(jq -r '.packages[] | select(.name == "ibexa/oss") | .version' composer.lock | sed 's/^v//')`"
-    elif [ -f composer.json ]; then
+    elif [[ -f composer.json ]]; then
         MIN_STABILITY="`(jq -r '."minimum-stability"' composer.json)`"
         PRODUCT_VERSION="`(jq -r '.extra."branch-alias"."dev-main"' composer.json)`"
     elif [[ ! "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
@@ -64,16 +64,15 @@ function detect_version() {
 }
 
 function detect_product() {
-    if [ ! "$REQUIRE" == "NONE" ]; then
+    if [[ ! "$REQUIRE" == "NONE" ]]; then
         PRODUCT_TYPE="Ibexa DXP Experience"
         return
     fi
 
     PROJECT_NAME=$(jq -r '.name' composer.json)
     # try to extract prouct edition from composer.json -> require
-    if [ "$PROJECT_NAME" == "null" ] ||  \
-       [ "$PROJECT_NAME" == "ibexa/website-skeleton" ] && \
-       [ "$(jq  -r '.require | to_entries[] | select(.key | startswith("ibexa/"))' composer.json)" != "" ]; then
+    if [[ "$PROJECT_NAME" == "null" || "$PROJECT_NAME" == "ibexa/website-skeleton" ]] && \
+       [[ "$(jq  -r '.require | to_entries[] | select(.key | startswith("ibexa/"))' composer.json)" != "" ]]; then
         PROJECT_NAME=$(jq  -r '.require | to_entries[] | select(.key | startswith("ibexa/commerce") or startswith("ibexa/experience") or startswith("ibexa/headless") or startswith("ibexa/content")) | .key ' composer.json)
     fi
 
@@ -99,11 +98,11 @@ function detect_product() {
 }
 
 function configure_product() {
-    if [ "$REQUIRE" == "NONE" ]; then
+    if [[ "$REQUIRE" == "NONE" ]]; then
       return
     fi
 
-    if [ "$DXP_EDITION" = "website" ]; then
+    if [[ "$DXP_EDITION" == "website" ]]; then
         choose "`(faint "[Product]")` `(bold "Select Ibexa product")`" "Ibexa OSS" "Ibexa DXP Headless" "Ibexa DXP Experience" "Ibexa DXP Commerce"
         PRODUCT_TYPE="$SELECT"
         case "$SELECT" in
@@ -122,15 +121,15 @@ function configure_product() {
         esac
     fi
 
-    if [ "$PRODUCT_VERSION" == "5.0" ]; then
+    if [[ "$PRODUCT_VERSION" == "5.0" ]]; then
         PRODUCT_VERSION=~5.0.0
-    elif [ "$PRODUCT_VERSION" == "4.6 Latest" ]; then
+    elif [[ "$PRODUCT_VERSION" == "4.6 Latest" ]]; then
         PRODUCT_VERSION=~4.6.0
     fi
 }
 
 function configure_release() {
-    if [ "$REQUIRE" == "NONE" ]; then
+    if [[ "$REQUIRE" == "NONE" ]]; then
         return
     fi
 
@@ -234,16 +233,18 @@ function configure_app_cache() {
 }
 
 function configure_search_engine() {
-    if [ "$DXP_EDITION" != "oss" ]; then
-        choose_delimited "`(faint "[Services]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Elasticsearch (recommended):elasticsearch" "Solr:solr"
-    else
+    if [[ "$DXP_EDITION" == "oss" ]]; then
         choose_delimited "`(faint "[Services]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Solr (recommended):solr"
+    elif [[ "$PRODUCT_VERSION" =~ ^(~|v)?(4\.6|5\.|6\.) ]]; then
+        choose_delimited "`(faint "[Services]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Elasticsearch 7:elasticsearch" "Elasticsearch 8:elasticsearch8" "Solr:solr"
+    else
+        choose_delimited "`(faint "[Services]")` `(bold "Select search engine")`" "$SEARCH_ENGINE" "Legacy:legacy" "Elasticsearch (recommended):elasticsearch" "Solr:solr"
     fi
     SEARCH_ENGINE="$SELECT"
 }
 
 function configure_sample_data() {
-    if [ "$REQUIRE" == "NONE" ]; then
+    if [[ "$REQUIRE" == "NONE" ]]; then
         return
     fi
 
@@ -252,7 +253,7 @@ function configure_sample_data() {
         return
     fi
 
-    if [ "$DXP_EDITION" != "oss" ]; then
+    if [[ "$DXP_EDITION" != "oss" ]]; then
         choose "`(faint "[Extras]")` `(bold "Install sample data?")`" "No" "Yes"
         case "$SELECT" in
             "No")
@@ -272,7 +273,7 @@ function configure_sample_data() {
 }
 
 function configure_profiler() {
-    if [ "$REQUIRE" == "NONE" ]; then
+    if [[ "$REQUIRE" == "NONE" ]]; then
         return
     fi
 
@@ -295,7 +296,7 @@ function configure_app_env() {
 }
 
 function configure_cloud() {
-    if [ "$REQUIRE" == "NONE" ]; then
+    if [[ "$REQUIRE" == "NONE" ]]; then
         return
     fi
 
@@ -310,7 +311,7 @@ function configure_cloud() {
 }
 
 function format_bool() {
-    if [ "$1" == true ]; then
+    if [[ "$1" == true ]]; then
         echo "yes"
     else
         echo "no"
@@ -420,7 +421,7 @@ detect_version
 
 configure_product
 
-if [ "$PLATFORM_APP" == true ]; then
+if [[ "$PLATFORM_APP" == true ]]; then
   print_selected_settings "`gum style --bold --underline -- "Configuration with presets from Ibexa Cloud .platform.app.yaml:"`"
 else
   print_selected_settings "`gum style --bold --underline -- "Recommended configuration:"`"

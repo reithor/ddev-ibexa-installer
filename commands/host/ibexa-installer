@@ -7,7 +7,7 @@
 
 source .ddev/commands/host/.utils
 
-if [ -f "$IBEXA_DXP_INSTALLED_LOCK_FILE" ] || [ ! -f "$INSTANCE_SETTINGS_FILE" ]
+if [[ -f "$IBEXA_DXP_INSTALLED_LOCK_FILE" || ! -f "$INSTANCE_SETTINGS_FILE" ]]
 then
   # Nothing to do
   echo "Nothing to do $IBEXA_DXP_INSTALLED_LOCK_FILE"
@@ -33,7 +33,7 @@ function composer_auth_error() {
     exit 1
 }
 
-if [ "$VERBOSE_INSTALL" == false ]; then
+if [[ "$VERBOSE_INSTALL" == false ]]; then
     clear
 fi
 
@@ -53,15 +53,15 @@ echo "🚀 Product to be installed: `(bold "$PRODUCT_TYPE $PRODUCT_VERSION")`"
 # Installation steps depend on project
 
 # 1. Existing project / with all vendor files
-if [ -d vendor ]; then
+if [[ -d vendor ]]; then
     REQUIRE=NONE
     INSTALL_PROFILER=false
     INSTALL_CLOUD_CONFIG=false
     INSTALL_SAMPLE_DATA=false
 # 2. Existing project / no vendor files
-elif [ -f composer.lock ]; then
+elif [[ -f composer.lock ]]; then
     REQUIRE=NONE
-    if [ "$APP_ENV" == "dev" ]; then
+    if [[ "$APP_ENV" == "dev" ]]; then
       execute_with_spinner "Running Composer [install]" composer install --optimize-autoloader
     else
       execute_with_spinner "Running Composer [install]" composer install --no-dev --optimize-autoloader
@@ -72,11 +72,11 @@ elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     mv .env.local .ddev/.env.local
     ddev composer create-project ibexa/website-skeleton:$PRODUCT_VERSION
     ddev composer config repositories.ibexa composer https://updates.ibexa.co
-    if [[ "$PRODUCT_VERSION" = *"4.6"* ]]; then
+    if [[ "$PRODUCT_VERSION" == *"4.6"* ]]; then
         ddev composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
     fi
 
-    if [ "$DXP_EDITION" != "oss" ]; then
+    if [[ "$DXP_EDITION" != "oss" ]]; then
         trap 'composer_auth_error' ERR
         execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-plugins --no-install --no-interaction --quiet
         trap 'error_handler' ERR
@@ -99,7 +99,7 @@ else
     mv .env.local .ddev/.env.local
     ddev composer create-project -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
     
-    if [[ "$PHP_VERSION" = "8.3" && ( "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0  || "$PRODUCT_VERSION" =~ ^(~|v)?4\.6 )  ]]; then
+    if [[ "$PHP_VERSION" == "8.3" && ( "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0  || "$PRODUCT_VERSION" =~ ^(~|v)?4\.6 )  ]]; then
         COMPOSER_MODE=install
         REQUIRE_MODE="--no-scripts --no-plugins --no-install --no-interaction --quiet"
     else
@@ -107,7 +107,7 @@ else
         REQUIRE_MODE="--update-with-all-dependencies --no-scripts --no-plugins --no-install --no-interaction --quiet"
     fi
 
-    if [ "$DXP_EDITION" != "oss" ]; then
+    if [[ "$DXP_EDITION" != "oss" ]]; then
         trap 'composer_auth_error' ERR
         execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION $REQUIRE_MODE
         trap 'error_handler' ERR
@@ -123,22 +123,22 @@ else
 fi
 
 # read vcl from vendor/ibexa/hhtp-cache
-if [ "$HTTP_CACHE" == "varnish" ]; then
+if [[ "$HTTP_CACHE" == "varnish" ]]; then
     ddev ibexa-syncvcl 
 fi
 
 ADDED_PACKAGE=false
 # Install test fixtures
 if [[ "$INSTALL_SAMPLE_DATA" == true && "$PRODUCT_VERSION" != *"3.3"* ]]; then
-    if [[ "$PRODUCT_VERSION" = *"4.6"* ]]; then
+    if [[ "$PRODUCT_VERSION" == *"4.6"* ]]; then
         FIXTURES_VERSION=~4.6.x-dev
-    elif [[ "$PRODUCT_VERSION" = *"6.0"* ]]; then
+    elif [[ "$PRODUCT_VERSION" == *"6.0"* ]]; then
         FIXTURES_VERSION=~6.0.x-dev
     else
         FIXTURES_VERSION=~5.0.x-dev
     fi
     
-    if [ "$?" == 0 ]; then
+    if [[ "$?" == 0 ]]; then
         execute_with_spinner "Require [ibexa/test-fixtures]" composer require ibexa/test-fixtures:$FIXTURES_VERSION --no-scripts --no-interaction
         echo "✅ Installed ibexa/test-fixtures package"
         ADDED_PACKAGE=true
@@ -149,15 +149,15 @@ if [[ "$INSTALL_SAMPLE_DATA" == true && "$PRODUCT_VERSION" != *"3.3"* ]]; then
 fi
 
 # Install profiler
-if [ "$INSTALL_PROFILER" == true ]; then
+if [[ "$INSTALL_PROFILER" == true ]]; then
     execute_with_spinner "Require [symfony/profiler-pack]" composer require --dev symfony/profiler-pack --no-scripts --no-interaction
     echo "✅ Installed Symfony Profiler"
     ADDED_PACKAGE=true
 fi
 
 # Setup Ibexa Cloud
-if [ "$INSTALL_CLOUD_CONFIG" == true ]; then
-    if [ "$CLOUD_CONFIG" == "upsun" ]; then
+if [[ "$INSTALL_CLOUD_CONFIG" == true ]]; then
+    if [[ "$CLOUD_CONFIG" == "upsun" ]]; then
       execute_with_spinner "Setup Ibexa Cloud [require ibexa/cloud]" composer require ibexa/cloud
       execute_with_spinner "Setup Ibexa Cloud [php bin/console ibexa:cloud:setup]" php bin/console ibexa:cloud:setup --upsun
     else
@@ -177,7 +177,7 @@ if [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     execute_with_spinner "Composer [post-update-cmd]" composer run post-update-cmd
     execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing --no-interaction
     ddev php bin/console cache:clear
-    if [ "$APP_CACHE" == "redis" ]; then
+    if [[ "$APP_CACHE" == "redis" ]]; then
       ddev php bin/console cache:pool:clear cache.redis
     fi
 else
@@ -185,14 +185,17 @@ else
 fi
 echo "✅ Database installed"
 
-if [ "$SEARCH_ENGINE" = "elasticsearch" ]; then
+if [[ "$SEARCH_ENGINE" == "elasticsearch" ]]; then
+    if [[ "$SEARCH_ENGINE" == "elasticsearch8" && "$PRODUCT_VERSION" == *"4.6"* ]]; then
+      execute_with_spinner "Require elasticsearch8 for v4.6" composer require ibexa/elasticsearch8 --with-all-dependencies
+    fi
     # clear elastic index before creating index template
     ddev exec  curl -XDELETE 'elasticsearch:9200/*' > /dev/null
     ddev php bin/console ibexa:elasticsearch:put-index-template
     echo "✅ Put Elasticsearch index template"
 fi
 
-if [ "$SEARCH_ENGINE" = "solr" ]; then
+if [[ "$SEARCH_ENGINE" == "solr" ]]; then
     mkdir .ddev/solr/configsets/collection1
     chmod 777 .ddev/solr/configsets/collection1
     cp -R vendor/ibexa/solr/src/lib/Resources/config/solr/* .ddev/solr/configsets/collection1/
@@ -215,7 +218,7 @@ function sample_data_error() {
 }
 
 # Setup sample data
-if [ "$INSTALL_SAMPLE_DATA" == true ]; then
+if [[ "$INSTALL_SAMPLE_DATA" == true ]]; then
     trap 'sample_data_error' ERR
     execute_with_spinner " [ibexa:test-fixtures:setup]" php bin/console ibexa:test-fixtures:setup --quiet
     trap 'error_handler' ERR
