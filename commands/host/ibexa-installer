@@ -50,6 +50,10 @@ banner "Interactive Installation Tool"
 
 echo "🚀 Product to be installed: `(bold "$PRODUCT_TYPE $PRODUCT_VERSION")`"
 
+if [[ -f public/DELETE_PUBLIC ]]; then
+  rm -rf public
+fi
+
 # Installation steps depend on project
 
 # 1. Existing project / with all vendor files

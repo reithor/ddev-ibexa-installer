@@ -104,6 +104,18 @@ echo "DATABASE_COLLATION=${DB_COLLATION}" >> .env.local
 
 echo "👷 Saved database details in .env.local"
 
+if [[ "$HTTP_SERVER" == "apache-fpm" ]]; then
+    cp .ddev/ibexa-resources/apache2/vhost.template .ddev/apache/apache-site.conf
+    sed -i "s/%HOST_NAME%/$DDEV_PROJECT.ddev.site/" .ddev/apache/apache-site.conf
+    sed -i 's/%HOST_ALIAS%/*.ddev.site/' .ddev/apache/apache-site.conf
+    sed -i 's/%IP_ADDRESS%/*/' .ddev/apache/apache-site.conf
+    sed -i 's/%PORT%/80/' .ddev/apache/apache-site.conf
+    sed -i 's/%BASEDIR%/\/var\/www\/html/' .ddev/apache/apache-site.conf
+    sed -i 's/%BODY_SIZE_LIMIT%/0/' .ddev/apache/apache-site.conf
+    sed -i 's/%TIMEOUT%/0/' .ddev/apache/apache-site.conf
+    sed -i 's/%FASTCGI_PASS%/unix:\/var\/run\/php-fpm.sock/' .ddev/apache/apache-site.conf
+fi
+
 if [[ "$HTTP_CACHE" == "varnish" ]]; then
     echo "# " >> .env.local
     echo "# dxp-installer generated" >> .env.local

@@ -46,6 +46,12 @@ function detect_installation() {
         LABEL_INSTALL_SAMPLE_DATA="No"
         #
         INSTALL_CLOUD_CONFIG=false
+    elif [[ ! -d public ]]; then
+      # temporary create public dir containing index.html
+      # to prevent fail when apache starts before composer install
+      mkdir public
+      touch public/DELETE_PUBLIC
+      touch public/index.html
     fi
 }
 
