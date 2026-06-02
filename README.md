@@ -11,15 +11,17 @@
 DDEV Ibexa DXP Installer is an interactive installation tool to install Ibexa DXP.
 During install you can change the following parameters for the new project:
 
-- Choose DXP release: 4.6 Latest, 4.6.x dev, 5.0.x dev, fixed 4.6.x release, 3.3 Latest, fixed 3.3.x release
+- Choose DXP release: 5.0 Latest, 5.0.x dev, fixed 5.0.x release, 4.6 Latest, 4.6.x dev, fixed 4.6.x release, 3.3 Latest, fixed 3.3.x release
 - PHP: 8.4, 8.3, 8.2, 8.1
 - Node version
-- HTTP Servers: nginx-fpm, apache-fpm(*)
+- HTTP Servers: nginx-fpm, _apache-fpm(*)_
 - HTTP Cache: Varnish, Symfony's built in HTTP cache
 - Database:
   - MariaDB, MySQL, Postgres
-- App cache: Redis, Memcached, Filesystem
+- App cache: Redis, Filesystem, _Memcached(*)_
 - Search engine: Elasticsearch, Solr, Legacy
+
+_(*): waiting for someone, who does the implementation (!)_
 
 ## Additional Features
 - Install Symfony Profiler
