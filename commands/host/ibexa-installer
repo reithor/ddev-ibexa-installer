@@ -7,6 +7,19 @@
 
 source .ddev/commands/host/.utils
 
+# fresh install:
+# one subdirectory (`.ddev`)
+# no lock files
+if [[
+  $(find . -mindepth 1 -maxdepth 1 -type d | wc -l) -eq 1 &&
+  ! -f "$IBEXA_DXP_INSTALLED_LOCK_FILE" &&
+  ! -f "$INSTANCE_SETTINGS_FILE"
+]]
+then
+  ddev ibexa-configurator
+  ddev ibexa-setup
+fi
+
 if [[ -f "$IBEXA_DXP_INSTALLED_LOCK_FILE" || ! -f "$INSTANCE_SETTINGS_FILE" ]]
 then
   # Nothing to do
