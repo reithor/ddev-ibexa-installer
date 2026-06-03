@@ -46,6 +46,12 @@ function detect_installation() {
         LABEL_INSTALL_SAMPLE_DATA="No"
         #
         INSTALL_CLOUD_CONFIG=false
+    elif [[ ! -d public ]]; then
+      # temporary create public dir containing index.html
+      # to prevent fail when apache starts before composer install
+      mkdir public
+      touch public/DELETE_PUBLIC
+      touch public/index.html
     fi
 }
 
@@ -140,6 +146,19 @@ function configure_release() {
         PRODUCT_VERSION=$(gum input --value=$PRODUCT_VERSION --prompt="Please provide minor release >  ")
     else
         PRODUCT_VERSION="$SELECT"
+    fi
+
+
+    if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
+        PRODUCT_BRANCH="3.3"
+    elif [[ "$PRODUCT_VERSION" == *"4.6."* ]]; then
+        PRODUCT_BRANCH="4.6"
+    elif [[ "$PRODUCT_VERSION" == *"5.0."* ]]; then
+        PRODUCT_BRANCH="5.0"
+    elif [[ "$PRODUCT_VERSION" == *"6.0."* ]]; then
+        PRODUCT_BRANCH="6.0"
+    else
+        PRODUCT_BRANCH="5.0"
     fi
 }
 
@@ -387,6 +406,7 @@ function save_settings_file() {
         declare -p DXP_EDITION
         declare -p PRODUCT_TYPE
         declare -p PRODUCT_VERSION
+        declare -p PRODUCT_BRANCH
         declare -p PHP_VERSION
         declare -p NODE_VERSION
         declare -p DATABASE

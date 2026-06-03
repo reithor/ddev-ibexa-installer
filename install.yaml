@@ -93,6 +93,7 @@ project_files:
   - config.db.yaml
   - web-build/pre.Dockerfile.gum
   - commands/
+  - ibexa-resources/
   - config.installer.yaml
   
 # List of files and directories that are copied into the global .ddev directory
