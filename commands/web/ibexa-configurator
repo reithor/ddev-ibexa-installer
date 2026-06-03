@@ -147,6 +147,19 @@ function configure_release() {
     else
         PRODUCT_VERSION="$SELECT"
     fi
+
+
+    if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
+        PRODUCT_BRANCH="3.3"
+    elif [[ "$PRODUCT_VERSION" == *"4.6."* ]]; then
+        PRODUCT_BRANCH="4.6"
+    elif [[ "$PRODUCT_VERSION" == *"5.0."* ]]; then
+        PRODUCT_BRANCH="5.0"
+    elif [[ "$PRODUCT_VERSION" == *"6.0."* ]]; then
+        PRODUCT_BRANCH="6.0"
+    else
+        PRODUCT_BRANCH="5.0"
+    fi
 }
 
 function configure_php() {
@@ -393,6 +406,7 @@ function save_settings_file() {
         declare -p DXP_EDITION
         declare -p PRODUCT_TYPE
         declare -p PRODUCT_VERSION
+        declare -p PRODUCT_BRANCH
         declare -p PHP_VERSION
         declare -p NODE_VERSION
         declare -p DATABASE
