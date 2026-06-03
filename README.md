@@ -21,7 +21,7 @@ During install you can change the following parameters for the new project:
 - App cache: Redis, Filesystem, _Memcached(*)_
 - Search engine: Elasticsearch, Solr, Legacy
 
-_(*): waiting for someone, who does the implementation (!)_
+_(*): barely tested (!)_
 
 ## Additional Features
 - Install Symfony Profiler

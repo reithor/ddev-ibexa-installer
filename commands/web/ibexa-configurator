@@ -103,6 +103,22 @@ function detect_product() {
     esac
 }
 
+function detect_branch() {
+      if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
+          PRODUCT_BRANCH="3.3"
+      elif [[ "$PRODUCT_VERSION" == *"4.6."* ]]; then
+          PRODUCT_BRANCH="4.6"
+      elif [[ "$PRODUCT_VERSION" == *"5.0."* ]]; then
+          PRODUCT_BRANCH="5.0"
+      elif [[ "$PRODUCT_VERSION" == *"6.0."* ]]; then
+          PRODUCT_BRANCH="6.0"
+      else
+          PRODUCT_BRANCH="5.0"
+      fi
+
+      echo
+}
+
 function configure_product() {
     if [[ "$REQUIRE" == "NONE" ]]; then
       return
@@ -147,19 +163,6 @@ function configure_release() {
     else
         PRODUCT_VERSION="$SELECT"
     fi
-
-
-    if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
-        PRODUCT_BRANCH="3.3"
-    elif [[ "$PRODUCT_VERSION" == *"4.6."* ]]; then
-        PRODUCT_BRANCH="4.6"
-    elif [[ "$PRODUCT_VERSION" == *"5.0."* ]]; then
-        PRODUCT_BRANCH="5.0"
-    elif [[ "$PRODUCT_VERSION" == *"6.0."* ]]; then
-        PRODUCT_BRANCH="6.0"
-    else
-        PRODUCT_BRANCH="5.0"
-    fi
 }
 
 function configure_php() {
@@ -190,7 +193,7 @@ function configure_node() {
 }
 
 function configure_http_server() {
-    choose_delimited "`(faint "[Environment]")` `(bold "Select HTTP server")`" "$HTTP_SERVER" "nginx (recommended):nginx-fpm" "Apache (untested):apache-fpm"
+    choose_delimited "`(faint "[Environment]")` `(bold "Select HTTP server")`" "$HTTP_SERVER" "nginx (recommended):nginx-fpm" "Apache (barely tested):apache-fpm"
     HTTP_SERVER="$SELECT"
 }
 
@@ -247,7 +250,7 @@ function configure_postgres_version() {
 }
 
 function configure_app_cache() {
-    choose_delimited "`(faint "[Services]")` `(bold "Select application cache")`" "$APP_CACHE" "Filesystem:filesystem" "Redis:redis" "Memcached (untested):memcached"
+    choose_delimited "`(faint "[Services]")` `(bold "Select application cache")`" "$APP_CACHE" "Filesystem:filesystem" "Redis:redis" "Memcached (barely tested):memcached"
     APP_CACHE="$SELECT"
 }
 
@@ -453,4 +456,5 @@ then
     select_configuration
 fi
 
+detect_branch
 save_settings_file
