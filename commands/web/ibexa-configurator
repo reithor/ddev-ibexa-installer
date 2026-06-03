@@ -115,8 +115,6 @@ function detect_branch() {
       else
           PRODUCT_BRANCH="5.0"
       fi
-
-      echo
 }
 
 function configure_product() {
