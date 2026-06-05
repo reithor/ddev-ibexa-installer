@@ -50,12 +50,6 @@ if [[ "$VERBOSE_INSTALL" == false ]]; then
     clear
 fi
 
-# Fallback headless -> content for 3.3 releases
-if [[ "$PRODUCT_VERSION" == *"3.3."* && "$DXP_EDITION" == "headless" ]]; then
-    PRODUCT_TYPE="Ibexa DXP Content"
-    DXP_EDITION=content
-fi
-
 # Workaround to the issue on Mac OS
 ddev exec git config --global --add safe.directory /var/www/html
 
@@ -146,7 +140,7 @@ fi
 
 ADDED_PACKAGE=false
 # Install test fixtures
-if [[ "$INSTALL_SAMPLE_DATA" == true && "$PRODUCT_VERSION" != *"3.3"* ]]; then
+if [[ "$INSTALL_SAMPLE_DATA" == true ]]; then
     if [[ "$PRODUCT_VERSION" == *"4.6"* ]]; then
         FIXTURES_VERSION=~4.6.x-dev
     elif [[ "$PRODUCT_VERSION" == *"6.0"* ]]; then
