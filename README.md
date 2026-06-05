@@ -56,9 +56,8 @@ _(*): barely tested (!)_
 Credential can be stored in several places.
 In `~/.ddev/homeadditions/.composer/auth.json` for all your DDEV projects or at project level.
 
-For example,
-the following commands
-create a new DDEV project and customize its ports,
+For example, the following commands
+create a new DDEV project with customized ports,
 copy the global auth.json to the project,
 get the add-on,
 and run the installer:
@@ -77,8 +76,21 @@ ddev add-on get reithor/ddev-ibexa-installer
 ddev ibexa-installer
 ```
 
+You can run on DDEV an already existing project.
+For example, the following commands
+config a DDEV project in an existing directory,
+and run the installer:
+
+```shell
+cd $PROJECT_DIR
+
+ddev config --project-type=php
+ddev add-on get reithor/ddev-ibexa-installer
+ddev ibexa-installer
+```
+
 You can increase installer verbosity (for example to see the packages installed by Composer)
-by creating a DDEV config file like `.ddev/config.local.yaml` before running the installer with the content:
+by creating, before running the installer, a DDEV config file like `.ddev/config.local.yaml` with the content:
 
 ```yaml
 web_environment:
