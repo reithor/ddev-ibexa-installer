@@ -97,24 +97,19 @@ function detect_product() {
         "oss")
             PRODUCT_TYPE="Ibexa OSS"
             ;;
-        "content")
-            PRODUCT_TYPE="Ibexa Content (3.3 & <=4.5)"
-            ;;
     esac
 }
 
 function detect_branch() {
-      if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
-          PRODUCT_BRANCH="3.3"
-      elif [[ "$PRODUCT_VERSION" == *"4.6."* ]]; then
-          PRODUCT_BRANCH="4.6"
-      elif [[ "$PRODUCT_VERSION" == *"5.0."* ]]; then
-          PRODUCT_BRANCH="5.0"
-      elif [[ "$PRODUCT_VERSION" == *"6.0."* ]]; then
-          PRODUCT_BRANCH="6.0"
-      else
-          PRODUCT_BRANCH="5.0"
-      fi
+    if [[ "$PRODUCT_VERSION" == *"4.6."* ]]; then
+        PRODUCT_BRANCH="4.6"
+    elif [[ "$PRODUCT_VERSION" == *"5.0."* ]]; then
+        PRODUCT_BRANCH="5.0"
+    elif [[ "$PRODUCT_VERSION" == *"6.0."* ]]; then
+        PRODUCT_BRANCH="6.0"
+    else
+        PRODUCT_BRANCH="5.0"
+    fi
 }
 
 function configure_product() {
@@ -153,7 +148,7 @@ function configure_release() {
         return
     fi
 
-    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "5.0 LTS" "6.0.x dev:~6.0.x-dev" "5.0 LTS:~5.0.0" "5.0.x dev:~5.0.x-dev" "5.0.x release:5.0.x release" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "4.6.x release:4.6.x release" "3.3 LTS:~3.3.0" "3.3.x release:3.3.x release"
+    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "5.0 LTS" "6.0.x dev:~6.0.x-dev" "5.0 LTS:~5.0.0" "5.0.x dev:~5.0.x-dev" "5.0.x release:5.0.x release" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "4.6.x release:4.6.x release"
     if [[ "$SELECT" =~ .*"x release" ]]; then
         PRODUCT_VERSION=$SELECT
         PRODUCT_VERSION="${SELECT/x release/}"
@@ -164,9 +159,7 @@ function configure_release() {
 }
 
 function configure_php() {
-    if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
-        choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1" "7.4:7.4"
-    elif [[ "$PRODUCT_VERSION" == *"4.6."* ]]; then
+    if [[ "$PRODUCT_VERSION" == *"4.6."* ]]; then
         choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1"
     elif [[ "$PRODUCT_VERSION" =~ ^~5\.0\. || "$PRODUCT_VERSION" =~ ^(v)?5\.0\.([x6-9]|[1-9][0-9]+) ]]; then
         choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3:8.3" "8.4:8.4"
@@ -180,9 +173,6 @@ function configure_php() {
 function configure_node() {
     if [[ "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0\. ]]; then
         NODE_VERSION="22"
-        return
-    elif [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
-        NODE_VERSION="18"
         return
     else
         choose_delimited "`(faint "[Environment]")` `(bold "Select Node version")`" "$NODE_VERSION" "22 (recommended):22" "18:18" "20:20"
@@ -234,11 +224,7 @@ function configure_mysql_version() {
         return
     fi
 
-    if [[ "$PRODUCT_VERSION" == *"3.3."* ]]; then
-        choose_delimited "`(faint "[Environment]")` `(bold "Select Mysql version")`" "$DATABASE_VERSION" "8.0 (recommended):8.0" "5.7:5.7"
-    else
-        choose_delimited "`(faint "[Environment]")` `(bold "Select Mysql version")`" "$DATABASE_VERSION" "8.4 (recommended):8.4" "8.0:8.0"
-    fi
+    choose_delimited "`(faint "[Environment]")` `(bold "Select Mysql version")`" "$DATABASE_VERSION" "8.4 (recommended):8.4" "8.0:8.0"
     DATABASE_VERSION="$SELECT"
 }
 
