@@ -83,6 +83,7 @@ DB_CHARSET=utf8mb4
 DB_COLLATION=utf8mb4_unicode_520_ci
 
 ddev dotenv set .ddev/.env --dxp-release="$PRODUCT_VERSION"
+verbose_output ddev dotenv set .ddev/.env.local --app-secret=$(openssl rand -hex 32)
 
 if [[ "$DATABASE" == "mariadb" ]]; then
     DB_VERSION=mariadb-`ddev exec -s db mysql -V | awk '{print $5}' | sed 's/-.*//'`
