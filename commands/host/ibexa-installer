@@ -133,11 +133,6 @@ else
     mv .ddev/.env.local .env.local
 fi
 
-# read vcl from vendor/ibexa/hhtp-cache
-if [[ "$HTTP_CACHE" == "varnish" ]]; then
-    ddev ibexa-syncvcl 
-fi
-
 ADDED_PACKAGE=false
 # Install test fixtures
 if [[ "$INSTALL_SAMPLE_DATA" == true ]]; then
