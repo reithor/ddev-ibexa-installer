@@ -125,18 +125,38 @@ if [[ "$HTTP_SERVER" == "apache-fpm" ]]; then
 fi
 
 if [[ "$HTTP_CACHE" == "varnish" ]]; then
-    echo "# " >> .env.local
-    echo "# dxp-installer generated" >> .env.local
-    echo "TRUSTED_PROXIES=REMOTE_ADDR" >> .env.local
-    echo "HTTPCACHE_PURGE_TYPE=varnish" >> .env.local
-    echo "HTTPCACHE_PURGE_SERVER=\$DDEV_PRIMARY_URL" >> .env.local
+    VARNISH_VERSION=7.1
+    ddev dotenv set .ddev/.env.varnish --varnish-docker-image=varnish:$VARNISH_VERSION
+    ddev add-on get ddev/ddev-varnish
 
-    verbose_output ddev add-on  get reithor/ddev-varnish
-
-    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
-        ddev dotenv set .ddev/.env --varnish-image-version="7.7.0"
-        ddev ibexa-syncvcl 7 5        
+    # fetch vcls from https://raw.githubusercontent.com/ibexa/http-cache
+    VCL_SOURCE_DIR="https://raw.githubusercontent.com/ibexa/http-cache/$PRODUCT_BRANCH/docs/varnish/vcl"
+    if ! curl -fsSL \
+        "$VCL_SOURCE_DIR/parameters.vcl" \
+        -o .ddev/varnish/parameters.vcl; then
+        echo "⛔️ Could not download parameters.vcl from $VCL_SOURCE_DIR"
+    else
+        echo "👷 Downloaded parameters.vcl from $VCL_SOURCE_DIR"
     fi
+
+    if ! curl -fsSL \
+        "$VCL_SOURCE_DIR/varnish7.vcl" \
+        -o .ddev/varnish/default.vcl; then
+        echo "⛔️ Could not download varnish7.vcl from $VCL_SOURCE_DIR"
+    else
+        echo "👷 Downloaded varnish7.vcl from $VCL_SOURCE_DIR"
+    fi
+
+    echo "web_environment:
+    - TRUSTED_PROXIES=varnish
+    - HTTPCACHE_PURGE_TYPE=varnish
+    - HTTPCACHE_PURGE_SERVER=http://varnish" > .ddev/config.varnish.yaml
+
+    ddev exec sed -i 's/.host = "127.0.0.1";/.host = "web";/' .ddev/varnish/parameters.vcl
+    ddev exec sed -i '/^acl invalidators {$/a \\    "web";' .ddev/varnish/parameters.vcl
+    ddev exec sed -i '/^acl debuggers {$/a \\    "0.0.0.0"/0; \/\/ debug from any IP' .ddev/varnish/parameters.vcl
+    ddev exec sed -i 's/acl invalidators {/acl invalidators +log {/' .ddev/varnish/parameters.vcl
+    ddev exec sed -i 's/acl debuggers {/acl debuggers +log {/' .ddev/varnish/parameters.vcl
 fi
 
 echo "👷 Configured HTTP cache: $HTTP_CACHE"
