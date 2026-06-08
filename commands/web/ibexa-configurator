@@ -234,7 +234,7 @@ function configure_postgres_version() {
 }
 
 function configure_app_cache() {
-    choose_delimited "`(faint "[Services]")` `(bold "Select application cache")`" "$APP_CACHE" "Filesystem:filesystem" "Redis:redis" "Memcached (barely tested):memcached"
+    choose_delimited "`(faint "[Services]")` `(bold "Select application cache")`" "$APP_CACHE" "Filesystem:filesystem" "Redis 7:redis" "Valkey 9:valkey" "Memcached (barely tested):memcached"
     APP_CACHE="$SELECT"
 }
 

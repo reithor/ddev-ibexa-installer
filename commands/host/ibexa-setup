@@ -173,13 +173,15 @@ if [[ "$APP_CACHE" == "memcached" ]]; then
 fi
 
 # Redis
-if [[ "$APP_CACHE" == "redis" ]]; then
-    echo "# " >> .env.local
-    echo "# dxp-installer generated" >> .env.local
-    echo "CACHE_POOL=cache.redis" >> .env.local
+if [[ "$APP_CACHE" == "redis" || "$APP_CACHE" == "valkey" ]]; then
+    if [[ "$APP_CACHE" == "valkey" ]]; then
+      verbose_output ddev dotenv set .ddev/.env.redis --redis-docker-image=valkey/valkey:9.1
+    fi
+    verbose_output ddev dotenv set .env.local --cache-pool=cache.redis
+    verbose_output ddev dotenv set .env.local --cache-dsn=redis:6379
 
-    echo "CACHE_DSN=redis:6379" >> .env.local
-    ddev add-on get ddev/ddev-redis
+    verbose_output ddev add-on get ddev/ddev-redis
+
     echo "# dxp-installer generated" > .ddev/redis/redis.conf
     echo "maxmemory 2048mb" >> .ddev/redis/redis.conf
     echo "maxmemory-policy volatile-lfu" >> .ddev/redis/redis.conf
