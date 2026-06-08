@@ -12,7 +12,7 @@ source .ddev/commands/host/.utils
 [[ -z "$PROVISION_FILE_SERVICES" ]] && PROVISION_FILE_SERVICES="./.ddev/.ibexa-setup-services-provisioned"
 [[ -z "$VERBOSE_INSTALL" ]] && VERBOSE_INSTALL=false
 
-if [[ "$VERBOSE_INSTALL" != false && ! -f "$PROVISION_FILE_GENERAL" && ! -f "$PROVISION_FILE_SERVICES" ]]; then
+if [[ "$VERBOSE_INSTALL" == false ]]; then
     clear
 fi
 
