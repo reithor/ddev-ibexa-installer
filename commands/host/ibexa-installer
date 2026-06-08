@@ -80,7 +80,7 @@ elif [[ -f composer.lock ]]; then
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
 # 3. New DEV Installation
 elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
-    mv .env.local .ddev/.env.local
+    mv .env.local .ddev/.env.local.tmp
     ddev composer create-project ibexa/website-skeleton:$PRODUCT_VERSION
     ddev composer config repositories.ibexa composer https://updates.ibexa.co
     if [[ "$PRODUCT_VERSION" == *"4.6"* ]]; then
@@ -104,10 +104,10 @@ elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     ddev exec git add . :'!.ddev' > /dev/null;
     ddev exec 'if [ $(git diff --cached --numstat | wc -l) -ne 0 ]; then git commit -m "recipes:install" > /dev/null; fi'
     echo "✅ recipes:install done"
-    mv .ddev/.env.local .env.local
+    mv .ddev/.env.local.tmp .env.local
 # 4. New regular release
 else
-    mv .env.local .ddev/.env.local
+    mv .env.local .ddev/.env.local.tmp
     ddev composer create-project -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
     
     if [[ "$PHP_VERSION" == "8.3" && ( "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0  || "$PRODUCT_VERSION" =~ ^(~|v)?4\.6 )  ]]; then
@@ -130,7 +130,7 @@ else
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
     ddev exec git init -q  > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
-    mv .ddev/.env.local .env.local
+    mv .ddev/.env.local.tmp .env.local
 fi
 
 ADDED_PACKAGE=false
