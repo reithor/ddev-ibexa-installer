@@ -1,10 +1,13 @@
 
 # DDEV Ibexa DXP Installer <!-- omit in toc -->
 
+https://github.com/user-attachments/assets/ff9447a4-ed33-4cb1-a524-e0c79c5acb9d
+
 * [What is DDEV Ibexa DXP Installer?](#what-is-ddev-ibexa-dxp-installer)
-* [Requirements](#requirements)
 * [Additional Features](#additional-features)
-* [Getting started](#getting-started)
+* [Requirements](#requirements)
+* [Preparation](#reparation)
+* [Finally: Create Project](#finally-create-project)
 
 ## What is DDEV Ibexa DXP Installer?
 
@@ -31,7 +34,7 @@ _(*): barely tested (!)_
 - Install sample data using ibexa/test-fixtures (Access is restricted)
 
 ## Requirements
-☝ DDEV installed in your system: https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/
+☝ DDEV installed on your system: https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/
 
 ☝For Ibexa Headless, Ibexa Experience, Ibexa Commerce a valid license is mandatory. Adding a personal github OAUTH token is recommended. Typical composer auth.json config:
 ```
@@ -52,9 +55,9 @@ _(*): barely tested (!)_
 Further information about Composer Authentication can be found here:
 
 - DDEV Docs: https://docs.ddev.com/en/stable/users/extend/in-container-configuration/#composer-authentication
-- Ibexa Docs: https://docs.ddev.com/en/stable/users/extend/in-container-configuration/#composer-authentication
- 
-## Preparations
+- Ibexa Docs: https://doc.ibexa.co/en/5.0/getting_started/install_with_ddev/#using-authjson
+
+## Preparation
 
 #### With local Composer authentication already working:
 
