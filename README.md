@@ -79,7 +79,7 @@ ln -s "$COMPOSER_AUTH_FILE" $DDEV_DIR/homeadditions/.composer/auth.json
 
 ✅ All newly created DDEV projects will now use your local Composer's Authentication.
 
-#### With no local Composer authentication:
+#### Without having local Composer authentication:
 
 👷Create `auth.json` file manually
 and save it to your global DDEV sources as `~/.ddev/homeadditions/.composer/auth.json`
