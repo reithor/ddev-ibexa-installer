@@ -37,7 +37,7 @@ _(*): barely tested (!)_
 ☝ DDEV installed on your system: https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/
 
 ☝For Ibexa Headless, Ibexa Experience, Ibexa Commerce a valid license is mandatory. Adding a personal github OAUTH token is recommended. Typical composer auth.json config:
-```
+``` json
 {
     "github-oauth": {
         "github.com": "<your-oauth-token>"
@@ -49,7 +49,6 @@ _(*): barely tested (!)_
         }
     }
 }
-
 ```
 
 Further information about Composer Authentication can be found here:
