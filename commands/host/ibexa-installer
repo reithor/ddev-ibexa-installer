@@ -95,7 +95,7 @@ elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     fi
     execute_with_spinner "Composer require ibexa/${DXP_EDITION}:${PRODUCT_VERSION}" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-interaction
     
-    ddev exec git init -q > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
+    ddev exec git init -b $INITIAL_BRANCH -q > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
     
     ddev composer recipes:install ibexa/$DXP_EDITION --force --reset
@@ -128,7 +128,7 @@ else
     execute_with_spinner "Running Composer [$COMPOSER_MODE]" composer $COMPOSER_MODE --optimize-autoloader
 
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
-    ddev exec git init -q  > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
+    ddev exec git init -b $INITIAL_BRANCH -q  > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
     mv .ddev/.env.local.tmp .env.local
 fi
