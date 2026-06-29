@@ -415,7 +415,9 @@ function save_settings_file() {
 # Main
 #
 
-clear
+if [[ "$VERBOSE_INSTALL" == false ]]; then
+  clear
+fi
 
 banner "Interactive Installation Tool"
 
