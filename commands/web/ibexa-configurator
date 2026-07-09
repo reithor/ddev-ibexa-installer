@@ -264,7 +264,7 @@ function configure_sample_data() {
     fi
 
     if [[ "$DXP_EDITION" != "oss" ]]; then
-        choose_selected "`(faint "[Extras]")` `(bold "Install sample data?")`" "No" "Yes" "No"
+        choose_delimited "`(faint "[Extras]")` `(bold "Install sample data?")`" "No" "Yes:Yes" "No:No"
         case "$SELECT" in
             "No")
                 INSTALL_SAMPLE_DATA=false

@@ -40,14 +40,6 @@ function choose() {
     SELECT=$(gum choose --header "$HEADER" -- "$@")
 }
 
-function choose_selected() {
-    local HEADER="$1"
-    local SELECTED="$2"
-    shift
-    shift
-    SELECT=$(gum choose --header "$HEADER" --selected "$SELECTED" -- "$@")
-}
-
 function choose_delimited() {
     local HEADER="$1"
     local SELECTED="$2"
