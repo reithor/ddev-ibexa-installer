@@ -148,7 +148,8 @@ function configure_release() {
         return
     fi
 
-    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "5.0 LTS" "6.0.x dev:~6.0.x-dev" "5.0 LTS:~5.0.0" "5.0.x dev:~5.0.x-dev" "5.0.x release:5.0.x release" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "4.6.x release:4.6.x release"
+    PRODUCT_VERSION_SELECTED_LABEL=${PRODUCT_VERSION_SELECTED_LABEL:="5.0 LTS"}
+    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION_SELECTED_LABEL" "6.0.x dev:~6.0.x-dev" "5.0 LTS:~5.0.0" "5.0.x dev:~5.0.x-dev" "5.0.x release:5.0.x release" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "4.6.x release:4.6.x release"
     if [[ "$SELECT" =~ .*"x release" ]]; then
         PRODUCT_VERSION=$SELECT
         PRODUCT_VERSION="${SELECT/x release/}"
@@ -156,6 +157,7 @@ function configure_release() {
     else
         PRODUCT_VERSION="$SELECT"
     fi
+    PRODUCT_VERSION_SELECTED_LABEL=$SELECT
 }
 
 function configure_php() {
@@ -428,7 +430,7 @@ detect_installation
 detect_product
 detect_version
 
-configure_product
+configure_product # TODO: Move to select_configuration
 
 if [[ "$PLATFORM_APP" == true ]]; then
   print_selected_settings "`gum style --bold --underline -- "Configuration with presets from Ibexa Cloud .platform.app.yaml:"`"
