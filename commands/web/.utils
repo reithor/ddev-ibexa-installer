@@ -45,6 +45,14 @@ function choose_delimited() {
     local SELECTED="$2"
     shift
     shift
+    for arg in "$@"; do
+        LABEL=${arg%%:*}  # before :
+        VALUE=${arg#*:}   # after :
+        if [[ "$VALUE" == "$SELECTED" ]]; then
+            SELECTED=$LABEL
+        fi
+    done
+
     SELECT=$(gum choose --header "$HEADER" --selected "$SELECTED" --label-delimiter ":" -- "$@")
 }
 
