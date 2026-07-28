@@ -108,7 +108,7 @@ elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
 # 4. New regular release
 else
     mv .env.local .ddev/.env.local.tmp
-    ddev composer create-project -y ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
+    ddev composer create-project ibexa/$DXP_EDITION-skeleton:$PRODUCT_VERSION --no-install
     
     if [[ "$PHP_VERSION" == "8.3" && ( "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0  || "$PRODUCT_VERSION" =~ ^(~|v)?4\.6 )  ]]; then
         COMPOSER_MODE=install
