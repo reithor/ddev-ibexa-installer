@@ -11,8 +11,6 @@ source .ddev/commands/web/.utils
 # Default settings
 #
 
-LABEL_INSTALL_SAMPLE_DATA="Yes"
-LABEL_INSTALL_PROFILER="Yes"
 IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 
 [[ -z "$PHP_VERSION" ]] && PHP_VERSION="8.3"
@@ -40,10 +38,8 @@ function detect_installation() {
         REQUIRE=NONE
         # profiler loaded from composer.json
         INSTALL_PROFILER=false
-        LABEL_INSTALL_PROFILER="No"
         # fixtures loaded from composer.json
         INSTALL_SAMPLE_DATA=false
-        LABEL_INSTALL_SAMPLE_DATA="No"
         #
         INSTALL_CLOUD_CONFIG=false
     elif [[ ! -d public ]]; then
@@ -262,21 +258,11 @@ function configure_sample_data() {
     fi
 
     if [[ "$DXP_EDITION" != "oss" ]]; then
-        choose_delimited "`(faint "[Extras]")` `(bold "Install sample data?")`" "$INSTALL_SAMPLE_DATA" "Yes:Yes" "No:No"
-        case "$SELECT" in
-            "No")
-                INSTALL_SAMPLE_DATA=false
-                LABEL_INSTALL_SAMPLE_DATA="No"
-                ;;
-            "Yes")
-                INSTALL_SAMPLE_DATA=true
-                LABEL_INSTALL_SAMPLE_DATA="Yes"
-                ;;
-        esac
+        choose_delimited "`(faint "[Extras]")` `(bold "Install sample data?")`" "$INSTALL_SAMPLE_DATA" "Yes:true" "No:false"
+        INSTALL_SAMPLE_DATA="$SELECT"
     else
         # OSS is incompatible with ibexa/test-fixtures
         INSTALL_SAMPLE_DATA=false
-        LABEL_INSTALL_SAMPLE_DATA="No"
     fi
 }
 
@@ -285,17 +271,8 @@ function configure_profiler() {
         return
     fi
 
-    choose "`(faint "[Extras]")` `(bold "Install Symfony profiler?")`" "Yes" "No"
-    case "$SELECT" in
-        "Yes")
-            INSTALL_PROFILER=true
-            LABEL_INSTALL_PROFILER="Yes"
-            ;;
-        "No")
-            INSTALL_PROFILER=false
-            LABEL_INSTALL_PROFILER="No"
-            ;;
-    esac
+    choose_delimited "`(faint "[Extras]")` `(bold "Install Symfony profiler?")`" "$INSTALL_PROFILER" "Yes:true" "No:false"
+    INSTALL_PROFILER="$SELECT"
 }
 
 function configure_app_env() {
