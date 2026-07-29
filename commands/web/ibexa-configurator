@@ -148,8 +148,7 @@ function configure_release() {
         return
     fi
 
-    PRODUCT_VERSION_SELECTED_LABEL=${PRODUCT_VERSION_SELECTED_LABEL:="5.0 LTS"}
-    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION_SELECTED_LABEL" "6.0.x dev:~6.0.x-dev" "5.0 LTS:~5.0.0" "5.0.x dev:~5.0.x-dev" "5.0.x release:5.0.x release" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "4.6.x release:4.6.x release"
+    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION" "6.0.x dev:~6.0.x-dev" "5.0 LTS:~5.0.0" "5.0.x dev:~5.0.x-dev" "5.0.x release:5.0.x release" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "4.6.x release:4.6.x release"
     if [[ "$SELECT" =~ .*"x release" ]]; then
         PRODUCT_VERSION=$SELECT
         PRODUCT_VERSION="${SELECT/x release/}"
@@ -157,7 +156,6 @@ function configure_release() {
     else
         PRODUCT_VERSION="$SELECT"
     fi
-    PRODUCT_VERSION_SELECTED_LABEL=$SELECT
 }
 
 function configure_php() {
@@ -264,7 +262,7 @@ function configure_sample_data() {
     fi
 
     if [[ "$DXP_EDITION" != "oss" ]]; then
-        choose_delimited "`(faint "[Extras]")` `(bold "Install sample data?")`" "No" "Yes:Yes" "No:No"
+        choose_delimited "`(faint "[Extras]")` `(bold "Install sample data?")`" "$INSTALL_SAMPLE_DATA" "Yes:Yes" "No:No"
         case "$SELECT" in
             "No")
                 INSTALL_SAMPLE_DATA=false
@@ -316,7 +314,7 @@ function configure_cloud() {
         CLOUD_CONFIG="platformsh"
     fi
 
-    choose_delimited "`(faint "[Extras]")` `(bold "Install Ibexa Cloud configuration?")`" "No" "Yes:true" "No:false"
+    choose_delimited "`(faint "[Extras]")` `(bold "Install Ibexa Cloud configuration?")`" "$INSTALL_CLOUD_CONFIG" "Yes:true" "No:false"
     INSTALL_CLOUD_CONFIG="$SELECT"
 }
 
