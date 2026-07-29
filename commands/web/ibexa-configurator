@@ -11,8 +11,6 @@ source .ddev/commands/web/.utils
 # Default settings
 #
 
-LABEL_INSTALL_SAMPLE_DATA="Yes"
-LABEL_INSTALL_PROFILER="Yes"
 IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 
 [[ -z "$PHP_VERSION" ]] && PHP_VERSION="8.3"
@@ -40,10 +38,8 @@ function detect_installation() {
         REQUIRE=NONE
         # profiler loaded from composer.json
         INSTALL_PROFILER=false
-        LABEL_INSTALL_PROFILER="No"
         # fixtures loaded from composer.json
         INSTALL_SAMPLE_DATA=false
-        LABEL_INSTALL_SAMPLE_DATA="No"
         #
         INSTALL_CLOUD_CONFIG=false
     elif [[ ! -d public ]]; then
@@ -148,7 +144,7 @@ function configure_release() {
         return
     fi
 
-    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "5.0 LTS" "6.0.x dev:~6.0.x-dev" "5.0 LTS:~5.0.0" "5.0.x dev:~5.0.x-dev" "5.0.x release:5.0.x release" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "4.6.x release:4.6.x release"
+    choose_delimited "`(faint "[Release]")` `(bold "Select Release")`" "$PRODUCT_VERSION" "6.0.x dev:~6.0.x-dev" "5.0 LTS:~5.0.0" "5.0.x dev:~5.0.x-dev" "5.0.x release:5.0.x release" "4.6 LTS:~4.6.0" "4.6.x dev:~4.6.x-dev" "4.6.x release:4.6.x release"
     if [[ "$SELECT" =~ .*"x release" ]]; then
         PRODUCT_VERSION=$SELECT
         PRODUCT_VERSION="${SELECT/x release/}"
@@ -163,6 +159,8 @@ function configure_php() {
         choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3 (recommended):8.3" "8.2:8.2" "8.1:8.1"
     elif [[ "$PRODUCT_VERSION" =~ ^~5\.0\. || "$PRODUCT_VERSION" =~ ^(v)?5\.0\.([x6-9]|[1-9][0-9]+) ]]; then
         choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3:8.3" "8.4:8.4"
+    elif [[ "$PRODUCT_VERSION" =~ ^~6\.0\. || "$PRODUCT_VERSION" =~ ^(v)?6\.0\.([x6-9]|[1-9][0-9]+) ]]; then
+        choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.5:8.5" "8.4:8.4" "8.3:8.3"
     else
         PHP_VERSION="8.3"
         return
@@ -260,21 +258,11 @@ function configure_sample_data() {
     fi
 
     if [[ "$DXP_EDITION" != "oss" ]]; then
-        choose "`(faint "[Extras]")` `(bold "Install sample data?")`" "No" "Yes"
-        case "$SELECT" in
-            "No")
-                INSTALL_SAMPLE_DATA=false
-                LABEL_INSTALL_SAMPLE_DATA="No"
-                ;;
-            "Yes")
-                INSTALL_SAMPLE_DATA=true
-                LABEL_INSTALL_SAMPLE_DATA="Yes"
-                ;;
-        esac
+        choose_delimited "`(faint "[Extras]")` `(bold "Install sample data?")`" "$INSTALL_SAMPLE_DATA" "Yes:true" "No:false"
+        INSTALL_SAMPLE_DATA="$SELECT"
     else
         # OSS is incompatible with ibexa/test-fixtures
         INSTALL_SAMPLE_DATA=false
-        LABEL_INSTALL_SAMPLE_DATA="No"
     fi
 }
 
@@ -283,17 +271,8 @@ function configure_profiler() {
         return
     fi
 
-    choose "`(faint "[Extras]")` `(bold "Install Symfony profiler?")`" "Yes" "No"
-    case "$SELECT" in
-        "Yes")
-            INSTALL_PROFILER=true
-            LABEL_INSTALL_PROFILER="Yes"
-            ;;
-        "No")
-            INSTALL_PROFILER=false
-            LABEL_INSTALL_PROFILER="No"
-            ;;
-    esac
+    choose_delimited "`(faint "[Extras]")` `(bold "Install Symfony profiler?")`" "$INSTALL_PROFILER" "Yes:true" "No:false"
+    INSTALL_PROFILER="$SELECT"
 }
 
 function configure_app_env() {
@@ -312,7 +291,7 @@ function configure_cloud() {
         CLOUD_CONFIG="platformsh"
     fi
 
-    choose_delimited "`(faint "[Extras]")` `(bold "Install Ibexa Cloud configuration?")`" "No" "Yes:true" "No:false"
+    choose_delimited "`(faint "[Extras]")` `(bold "Install Ibexa Cloud configuration?")`" "$INSTALL_CLOUD_CONFIG" "Yes:true" "No:false"
     INSTALL_CLOUD_CONFIG="$SELECT"
 }
 
@@ -428,7 +407,7 @@ detect_installation
 detect_product
 detect_version
 
-configure_product
+configure_product # TODO: Move to select_configuration
 
 if [[ "$PLATFORM_APP" == true ]]; then
   print_selected_settings "`gum style --bold --underline -- "Configuration with presets from Ibexa Cloud .platform.app.yaml:"`"
