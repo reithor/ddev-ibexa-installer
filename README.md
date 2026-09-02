@@ -18,7 +18,7 @@ During install you can change the following parameters for the new project:
 - PHP: 8.4, 8.3, 8.2, 8.1
 - Node version
 - HTTP Servers: nginx-fpm, _apache-fpm(*)_
-- HTTP Cache: Varnish, Symfony's built in HTTP cache
+- HTTP Cache: Varnish, Symfony's built-in HTTP cache
 - Database:
   - MariaDB, MySQL, Postgres
 - App cache: Redis, Valkey, Filesystem, _Memcached(*)_
@@ -27,6 +27,7 @@ During install you can change the following parameters for the new project:
 _(*): barely tested (!)_
 
 ## Additional Features
+
 - Install Symfony Profiler
 - Configure app environment: prod or dev
 - Install Ibexa Cloud configuration
@@ -34,9 +35,10 @@ _(*): barely tested (!)_
 - Install sample data using ibexa/test-fixtures (Access is restricted)
 
 ## Requirements
+
 ☝ DDEV installed on your system: https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/
 
-☝For Ibexa Headless, Ibexa Experience, Ibexa Commerce a valid license is mandatory. Adding a personal github OAUTH token is recommended. Typical composer auth.json config:
+☝ For Ibexa Headless, Ibexa Experience, Ibexa Commerce a valid license is mandatory. Adding a personal github OAUTH token is recommended. Typical composer auth.json config:
 ``` json
 {
     "github-oauth": {
@@ -44,8 +46,8 @@ _(*): barely tested (!)_
     },
     "http-basic": {
         "updates.ibexa.co": {
-          "username": "<installation-key>",
-          "password": "<installation-token>"
+            "username": "<installation-key>",
+            "password": "<installation-token>"
         }
     }
 }
@@ -80,7 +82,7 @@ ln -s "$COMPOSER_AUTH_FILE" $DDEV_DIR/homeadditions/.composer/auth.json
 
 #### Without having local Composer authentication:
 
-👷Create `auth.json` file manually
+👷 Create `auth.json` file manually
 and save it to your global DDEV sources as `~/.ddev/homeadditions/.composer/auth.json`
 
 ✅ All newly created DDEV projects will use your custom `auth.json` file.
@@ -96,20 +98,17 @@ ddev config --project-type=php
 
 # create .ddev/homeadditions/.composer/auth.json file
 # in your project directory as described above
-
 ```
 
 ## Finally: Create Project
 
-The following code will start the installation for a new project running on https://my_ibexa_project.ddev.local :
-``` bash
+The following code will start the installation for a new project running on https://my_ibexa_project.ddev.local:
 
+``` bash
 mkdir my_ibexa_project
 cd my_ibexa_project
 
 ddev config --project-type=php
 ddev add-on get reithor/ddev-ibexa-installer
 ddev ibexa-installer
-
 ```
-
