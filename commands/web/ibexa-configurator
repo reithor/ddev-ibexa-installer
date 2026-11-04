@@ -171,7 +171,10 @@ function configure_php() {
 }
 
 function configure_node() {
-    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0\. ]]; then
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?6\.0\. ]]; then
+        NODE_VERSION="24"
+        return
+    elif [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
         NODE_VERSION="22"
         return
     else
