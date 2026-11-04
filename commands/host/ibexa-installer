@@ -46,7 +46,9 @@ function composer_auth_error() {
     exit 1
 }
 
+QUIET_FLAG=""
 if [[ "$VERBOSE_INSTALL" == false ]]; then
+    QUIET_FLAG="--quiet"
     clear
 fi
 
@@ -89,7 +91,7 @@ elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
 
     if [[ "$DXP_EDITION" != "oss" ]]; then
         trap 'composer_auth_error' ERR
-        execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-plugins --no-install --no-interaction --quiet
+        execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-plugins --no-install --no-interaction $QUIET_FLAG
         trap 'error_handler' ERR
         echo "✅ Repository `(bold updates.ibexa.co)` is reachable"
     fi
@@ -112,10 +114,10 @@ else
     
     if [[ "$PHP_VERSION" == "8.3" && ( "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0  || "$PRODUCT_VERSION" =~ ^(~|v)?4\.6 )  ]]; then
         COMPOSER_MODE=install
-        REQUIRE_MODE="--no-scripts --no-plugins --no-install --no-interaction --quiet"
+        REQUIRE_MODE="--no-scripts --no-plugins --no-install --no-interaction $QUIET_FLAG"
     else
         COMPOSER_MODE=update
-        REQUIRE_MODE="--update-with-all-dependencies --no-scripts --no-plugins --no-install --no-interaction --quiet"
+        REQUIRE_MODE="--update-with-all-dependencies --no-scripts --no-plugins --no-install --no-interaction $QUIET_FLAG"
     fi
 
     if [[ "$DXP_EDITION" != "oss" ]]; then
@@ -181,13 +183,13 @@ echo "✅ Scripts finished successfully"
 
 if [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     execute_with_spinner "Composer [post-update-cmd]" composer run post-update-cmd
-    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing --no-interaction
+    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install $QUIET_FLAG --no-debug --skip-indexing --no-interaction
     ddev php bin/console cache:clear
     if [[ "$APP_CACHE" == "redis" ]]; then
       ddev php bin/console cache:pool:clear cache.redis
     fi
 else
-    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing --no-interaction
+    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install $QUIET_FLAG --no-debug --skip-indexing --no-interaction
 fi
 echo "✅ Database installed"
 
@@ -226,7 +228,7 @@ function sample_data_error() {
 # Setup sample data
 if [[ "$INSTALL_SAMPLE_DATA" == true ]]; then
     trap 'sample_data_error' ERR
-    execute_with_spinner " [ibexa:test-fixtures:setup]" php bin/console ibexa:test-fixtures:setup --quiet
+    execute_with_spinner " [ibexa:test-fixtures:setup]" php bin/console ibexa:test-fixtures:setup $QUIET_FLAG
     trap 'error_handler' ERR
     echo "✅ Installed sample data"
 fi
