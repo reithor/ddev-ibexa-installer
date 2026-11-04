@@ -160,7 +160,9 @@ function configure_php() {
     elif [[ "$PRODUCT_VERSION" =~ ^~5\.0\. || "$PRODUCT_VERSION" =~ ^(v)?5\.0\.([x6-9]|[1-9][0-9]+) ]]; then
         choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3:8.3" "8.4:8.4"
     elif [[ "$PRODUCT_VERSION" =~ ^~6\.0\. || "$PRODUCT_VERSION" =~ ^(v)?6\.0\.([x6-9]|[1-9][0-9]+) ]]; then
-        choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.5:8.5" "8.4:8.4" "8.3:8.3"
+        local php_options=("8.5:8.5")
+        ddev_version_at_least v1.25.5 && php_options+=("8.6:8.6")
+        choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "${php_options[@]}"
     else
         PHP_VERSION="8.3"
         return
