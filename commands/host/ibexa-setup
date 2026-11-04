@@ -34,6 +34,12 @@ if [[ ! -f "$PROVISION_FILE_GENERAL" ]]; then
     # PHP
     echo "php_version: $PHP_VERSION" > .ddev/config.php.yaml
     echo "👷 Configured PHP version: $PHP_VERSION"
+    if [[ "$PHP_VERSION" == "8.6" ]]; then
+        # Many packages do not declare PHP 8.6 support yet - ignore upper PHP bounds (lower bounds are still enforced)
+        echo "web_environment:
+  - COMPOSER_IGNORE_PLATFORM_REQ=php+" >> .ddev/config.php.yaml
+        echo "👷 Configured Composer to ignore upper PHP version constraints (COMPOSER_IGNORE_PLATFORM_REQ=php+)"
+    fi
 
     # NodeJS
     echo "nodejs_version: $NODE_VERSION" > .ddev/config.node.yaml

@@ -68,6 +68,40 @@ function error_handler() {
     exit 1
 }
 
+export COMPOSER_RESOLVE_LOG=".ddev/.composer-resolve.log"
+
+# Like execute_with_spinner, but also writes the command output to $COMPOSER_RESOLVE_LOG
+# (relative to the project root, which is the working dir both on host and in the web container)
+# so that failures can be diagnosed afterwards.
+function execute_with_log() {
+    TITLE="$1"
+    shift
+
+    local cmd
+    cmd="set -o pipefail; $(printf '%q ' "$@") 2>&1 | tee $COMPOSER_RESOLVE_LOG"
+
+    if [[ "$VERBOSE_INSTALL" == true ]]; then
+        echo "🚧 $TITLE"
+        ddev exec "$cmd"
+    else
+        ddev gum spin --title "$TITLE" --timeout 0s -- bash -c "$cmd"
+    fi
+}
+
+function dependency_resolution_error() {
+    echo ""
+    if grep -q "your php version .* does not satisfy" "$COMPOSER_RESOLVE_LOG" 2>/dev/null; then
+        echo "❗️ Some dependencies do not support PHP `(bold "$PHP_VERSION")` yet:"
+        sed -nE 's/^ *- ([a-z0-9_.-]+\/[a-z0-9_.-]+)(\[[^]]*\]| [^ ]+) requires? php .*does not satisfy.*/\1/p' "$COMPOSER_RESOLVE_LOG" \
+            | sort -u | sed 's/^/   • /'
+        echo "Choose a different PHP version or wait until these packages declare support for PHP $PHP_VERSION."
+    else
+        echo "❗️ Composer could not resolve dependencies for `(bold "ibexa/$DXP_EDITION:$PRODUCT_VERSION")`"
+    fi
+    echo "Full Composer output: `(faint "$COMPOSER_RESOLVE_LOG")`"
+    exit 1
+}
+
 function check_composer_auth() {
     HAS_USERNAME=$(ddev composer config --list | grep http-basic.updates.ibexa.co.username)
     HAS_PASSWORD=$(ddev composer config --list | grep http-basic.updates.ibexa.co.password)
