@@ -8,6 +8,7 @@ https://github.com/user-attachments/assets/ff9447a4-ed33-4cb1-a524-e0c79c5acb9d
 * [Requirements](#requirements)
 * [Preparation](#reparation)
 * [Finally: Create Project](#finally-create-project)
+* [PHP 8.6 (experimental)](#php-86-experimental)
 
 ## What is DDEV Ibexa DXP Installer?
 
@@ -112,3 +113,10 @@ ddev config --project-type=php
 ddev add-on get reithor/ddev-ibexa-installer
 ddev ibexa-installer
 ```
+
+## PHP 8.6 (experimental)
+
+PHP 8.6 is offered for Ibexa DXP 6.0 only and requires DDEV >= v1.25.5. When selected:
+
+- Verbose install is enabled: all command output is shown and also written to `.ddev/.ibexa-installer.log` (as with any install using `VERBOSE_INSTALL=true`).
+- `COMPOSER_IGNORE_PLATFORM_REQ=php+` is set in `.ddev/config.php.yaml`, so packages that do not declare PHP 8.6 support yet can still be installed. These packages are listed as a warning after install, and the PHP lines of `composer check-platform-reqs --lock` are written to the log.

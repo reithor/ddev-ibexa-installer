@@ -61,8 +61,14 @@ function warn_php_platform_ignored() {
     ignored=$(ddev exec printenv COMPOSER_IGNORE_PLATFORM_REQ 2>/dev/null | tail -n 1 || true)
     [[ -z "$ignored" ]] && return 0
 
-    packages=$(ddev exec composer check-platform-reqs --lock --no-interaction 2>&1 \
-        | grep -oE '[a-z0-9_.-]+/[a-z0-9_.-]+ requires php \([^[][^)]*\)' | sort -u || true)
+    local reqs
+    reqs=$(ddev exec composer check-platform-reqs --lock --no-interaction 2>&1 | grep php || true)
+    if [[ "$VERBOSE_INSTALL" == true ]]; then
+        echo "### composer check-platform-reqs --lock | grep php (COMPOSER_IGNORE_PLATFORM_REQ=$ignored)" >> "$INSTALL_LOG"
+        echo "$reqs" >> "$INSTALL_LOG"
+    fi
+
+    packages=$(echo "$reqs" | grep -oE '[a-z0-9_.-]+/[a-z0-9_.-]+ requires php \([^[][^)]*\)' | sort -u || true)
     [[ -z "$packages" ]] && return 0
 
     echo "⚠️  Installed with `(bold "COMPOSER_IGNORE_PLATFORM_REQ=$ignored")` - these packages do not declare support for PHP `(bold "$PHP_VERSION")` yet:"
@@ -74,6 +80,10 @@ QUIET_FLAG=""
 if [[ "$VERBOSE_INSTALL" == false ]]; then
     QUIET_FLAG="--quiet"
     clear
+fi
+
+if [[ "$VERBOSE_INSTALL" == true ]]; then
+    : > "$INSTALL_LOG"
 fi
 
 # Workaround to the issue on Mac OS
@@ -117,7 +127,7 @@ elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
         check_ibexa_repository_access
     fi
     trap 'dependency_resolution_error' ERR
-    execute_with_log "Composer require ibexa/${DXP_EDITION}:${PRODUCT_VERSION}" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-interaction
+    execute_with_spinner "Composer require ibexa/${DXP_EDITION}:${PRODUCT_VERSION}" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-interaction
     trap 'error_handler' ERR
     
     ddev exec git init -b $INITIAL_BRANCH -q > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
@@ -149,10 +159,10 @@ else
 
     trap 'dependency_resolution_error' ERR
     if [[ "$DXP_EDITION" != "oss" ]]; then
-        execute_with_log "Resolving dependencies for ibexa/${DXP_EDITION}:${PRODUCT_VERSION}" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION $REQUIRE_MODE
+        execute_with_spinner "Resolving dependencies for ibexa/${DXP_EDITION}:${PRODUCT_VERSION}" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION $REQUIRE_MODE
     fi
 
-    execute_with_log "Running Composer [$COMPOSER_MODE]" composer $COMPOSER_MODE --optimize-autoloader
+    execute_with_spinner "Running Composer [$COMPOSER_MODE]" composer $COMPOSER_MODE --optimize-autoloader
     trap 'error_handler' ERR
 
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
