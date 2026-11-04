@@ -160,16 +160,24 @@ function configure_php() {
     elif [[ "$PRODUCT_VERSION" =~ ^~5\.0\. || "$PRODUCT_VERSION" =~ ^(v)?5\.0\.([x6-9]|[1-9][0-9]+) ]]; then
         choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.3:8.3" "8.4:8.4"
     elif [[ "$PRODUCT_VERSION" =~ ^~6\.0\. || "$PRODUCT_VERSION" =~ ^(v)?6\.0\.([x6-9]|[1-9][0-9]+) ]]; then
-        choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "8.5:8.5" "8.4:8.4" "8.3:8.3"
+        local php_options=("8.5:8.5")
+        ddev_version_at_least v1.25.5 && php_options+=("8.6:8.6")
+        choose_delimited "`(faint "[Environment]")` `(bold "Select PHP version")`" "$PHP_VERSION" "${php_options[@]}"
     else
         PHP_VERSION="8.3"
         return
     fi
     PHP_VERSION="$SELECT"
+    if [[ "$PHP_VERSION" == "8.6" ]]; then
+        VERBOSE_INSTALL=true
+    fi
 }
 
 function configure_node() {
-    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0\. ]]; then
+    if [[ "$PRODUCT_VERSION" =~ ^(~|v)?6\.0\. ]]; then
+        NODE_VERSION="24"
+        return
+    elif [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
         NODE_VERSION="22"
         return
     else
@@ -386,6 +394,9 @@ function save_settings_file() {
         declare -p HTTP_SERVER
         declare -p INSTALL_CLOUD_CONFIG
         declare -p CLOUD_CONFIG
+        if [[ "$VERBOSE_INSTALL" == true ]]; then
+            declare -p VERBOSE_INSTALL
+        fi
 
     } > "$INSTANCE_SETTINGS_FILE"
 }

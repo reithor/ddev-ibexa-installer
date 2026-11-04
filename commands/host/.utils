@@ -16,13 +16,19 @@ function verbose_output() {
     fi
 }
 
+# Install log, written only when VERBOSE_INSTALL=true
+# (relative to the project root, which is the working dir both on host and in the web container)
+export INSTALL_LOG=".ddev/.ibexa-installer.log"
+
 function execute_with_spinner() {
     TITLE="$1"
     shift
 
     if [[ "$VERBOSE_INSTALL" == true ]]; then
         echo "🚧 $TITLE"
-        ddev exec "$@"
+        echo "### $TITLE: $*" >> "$INSTALL_LOG"
+        ddev exec "$@" 2>&1 | tee -a "$INSTALL_LOG"
+        return "${PIPESTATUS[0]}"
     else
         ddev gum spin --title "$TITLE" --timeout 0s -- "$@"
     fi
@@ -65,6 +71,24 @@ function faint() {
 function error_handler() {
     echo ""
     echo "❌️  An error occurred. Exiting..."
+    exit 1
+}
+
+function dependency_resolution_error() {
+    echo ""
+    if [[ "$VERBOSE_INSTALL" == true ]] && grep -q "your php version .* does not satisfy" "$INSTALL_LOG" 2>/dev/null; then
+        echo "❗️ Some dependencies do not support PHP `(bold "$PHP_VERSION")` yet:"
+        sed -nE 's/^ *- ([a-z0-9_.-]+\/[a-z0-9_.-]+)(\[[^]]*\]| [^ ]+) requires? php .*does not satisfy.*/\1/p' "$INSTALL_LOG" \
+            | sort -u | sed 's/^/   • /'
+        echo "Choose a different PHP version or wait until these packages declare support for PHP $PHP_VERSION."
+    else
+        echo "❗️ Composer could not resolve dependencies for `(bold "ibexa/$DXP_EDITION:$PRODUCT_VERSION")`"
+    fi
+    if [[ "$VERBOSE_INSTALL" == true ]]; then
+        echo "Full output: `(faint "$INSTALL_LOG")`"
+    else
+        echo "Set `(faint "VERBOSE_INSTALL=true")` in `(faint ".ddev/config.installer.yaml")` and re-run to see the full output."
+    fi
     exit 1
 }
 

@@ -46,8 +46,44 @@ function composer_auth_error() {
     exit 1
 }
 
+# Only checks that the repository is reachable with the configured credentials,
+# without resolving dependencies (resolution errors are reported separately).
+function check_ibexa_repository_access() {
+    trap 'composer_auth_error' ERR
+    execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer show --available ibexa/$DXP_EDITION --no-interaction $QUIET_FLAG
+    trap 'error_handler' ERR
+    echo "✅ Repository `(bold updates.ibexa.co)` is reachable"
+}
+
+# When upper PHP bounds are ignored (e.g. PHP 8.6), list installed packages that do not declare support for the current PHP version yet
+function warn_php_platform_ignored() {
+    local ignored packages
+    ignored=$(ddev exec printenv COMPOSER_IGNORE_PLATFORM_REQ 2>/dev/null | tail -n 1 || true)
+    [[ -z "$ignored" ]] && return 0
+
+    local reqs
+    reqs=$(ddev exec composer check-platform-reqs --lock --no-interaction 2>&1 | grep php || true)
+    if [[ "$VERBOSE_INSTALL" == true ]]; then
+        echo "### composer check-platform-reqs --lock | grep php (COMPOSER_IGNORE_PLATFORM_REQ=$ignored)" >> "$INSTALL_LOG"
+        echo "$reqs" >> "$INSTALL_LOG"
+    fi
+
+    packages=$(echo "$reqs" | grep -oE '[a-z0-9_.-]+/[a-z0-9_.-]+ requires php \([^[][^)]*\)' | sort -u || true)
+    [[ -z "$packages" ]] && return 0
+
+    echo "⚠️  Installed with `(bold "COMPOSER_IGNORE_PLATFORM_REQ=$ignored")` - these packages do not declare support for PHP `(bold "$PHP_VERSION")` yet:"
+    echo "$packages" | sed 's/^/   • /'
+    echo "   Re-check anytime with `(faint "ddev composer check-platform-reqs --lock")`"
+}
+
+QUIET_FLAG=""
 if [[ "$VERBOSE_INSTALL" == false ]]; then
+    QUIET_FLAG="--quiet"
     clear
+fi
+
+if [[ "$VERBOSE_INSTALL" == true ]]; then
+    : > "$INSTALL_LOG"
 fi
 
 # Workaround to the issue on Mac OS
@@ -88,12 +124,11 @@ elif [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     fi
 
     if [[ "$DXP_EDITION" != "oss" ]]; then
-        trap 'composer_auth_error' ERR
-        execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-plugins --no-install --no-interaction --quiet
-        trap 'error_handler' ERR
-        echo "✅ Repository `(bold updates.ibexa.co)` is reachable"
+        check_ibexa_repository_access
     fi
+    trap 'dependency_resolution_error' ERR
     execute_with_spinner "Composer require ibexa/${DXP_EDITION}:${PRODUCT_VERSION}" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION -W --no-scripts --no-interaction
+    trap 'error_handler' ERR
     
     ddev exec git init -b $INITIAL_BRANCH -q > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
@@ -112,26 +147,30 @@ else
     
     if [[ "$PHP_VERSION" == "8.3" && ( "$PRODUCT_VERSION" =~ ^(~|v)?(5|6)\.0  || "$PRODUCT_VERSION" =~ ^(~|v)?4\.6 )  ]]; then
         COMPOSER_MODE=install
-        REQUIRE_MODE="--no-scripts --no-plugins --no-install --no-interaction --quiet"
+        REQUIRE_MODE="--no-scripts --no-plugins --no-install --no-interaction"
     else
         COMPOSER_MODE=update
-        REQUIRE_MODE="--update-with-all-dependencies --no-scripts --no-plugins --no-install --no-interaction --quiet"
+        REQUIRE_MODE="--update-with-all-dependencies --no-scripts --no-plugins --no-install --no-interaction"
     fi
 
     if [[ "$DXP_EDITION" != "oss" ]]; then
-        trap 'composer_auth_error' ERR
-        execute_with_spinner "Checking `(bold updates.ibexa.co)` authorization" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION $REQUIRE_MODE
-        trap 'error_handler' ERR
-        echo "✅ Repository `(bold updates.ibexa.co)` is reachable"
+        check_ibexa_repository_access
+    fi
+
+    trap 'dependency_resolution_error' ERR
+    if [[ "$DXP_EDITION" != "oss" ]]; then
+        execute_with_spinner "Resolving dependencies for ibexa/${DXP_EDITION}:${PRODUCT_VERSION}" composer require ibexa/$DXP_EDITION:$PRODUCT_VERSION $REQUIRE_MODE
     fi
 
     execute_with_spinner "Running Composer [$COMPOSER_MODE]" composer $COMPOSER_MODE --optimize-autoloader
+    trap 'error_handler' ERR
 
     echo "✅ Package `(bold ibexa/${DXP_EDITION})` installed successfully"
     ddev exec git init -b $INITIAL_BRANCH -q  > /dev/null; ddev exec git add . :'!.ddev' > /dev/null; ddev exec git commit -m "Installed Ibexa DXP" > /dev/null;
     echo "✅ Initialized git repository"
     mv .ddev/.env.local.tmp .env.local
 fi
+warn_php_platform_ignored
 
 ADDED_PACKAGE=false
 # Install test fixtures
@@ -181,13 +220,13 @@ echo "✅ Scripts finished successfully"
 
 if [[ "$PRODUCT_VERSION" =~ .*"-dev" ]]; then
     execute_with_spinner "Composer [post-update-cmd]" composer run post-update-cmd
-    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing --no-interaction
+    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install $QUIET_FLAG --no-debug --skip-indexing --no-interaction
     ddev php bin/console cache:clear
     if [[ "$APP_CACHE" == "redis" ]]; then
       ddev php bin/console cache:pool:clear cache.redis
     fi
 else
-    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install --quiet --no-debug --skip-indexing --no-interaction
+    execute_with_spinner "Install DB [ibexa:install]" php bin/console ibexa:install $QUIET_FLAG --no-debug --skip-indexing --no-interaction
 fi
 echo "✅ Database installed"
 
@@ -226,7 +265,7 @@ function sample_data_error() {
 # Setup sample data
 if [[ "$INSTALL_SAMPLE_DATA" == true ]]; then
     trap 'sample_data_error' ERR
-    execute_with_spinner " [ibexa:test-fixtures:setup]" php bin/console ibexa:test-fixtures:setup --quiet
+    execute_with_spinner " [ibexa:test-fixtures:setup]" php bin/console ibexa:test-fixtures:setup $QUIET_FLAG
     trap 'error_handler' ERR
     echo "✅ Installed sample data"
 fi
