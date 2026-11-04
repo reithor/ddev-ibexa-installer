@@ -168,6 +168,9 @@ function configure_php() {
         return
     fi
     PHP_VERSION="$SELECT"
+    if [[ "$PHP_VERSION" == "8.6" ]]; then
+        VERBOSE_INSTALL=true
+    fi
 }
 
 function configure_node() {
@@ -391,6 +394,9 @@ function save_settings_file() {
         declare -p HTTP_SERVER
         declare -p INSTALL_CLOUD_CONFIG
         declare -p CLOUD_CONFIG
+        if [[ "$VERBOSE_INSTALL" == true ]]; then
+            declare -p VERBOSE_INSTALL
+        fi
 
     } > "$INSTANCE_SETTINGS_FILE"
 }
