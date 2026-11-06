@@ -16,7 +16,7 @@ IBEXA_DXP_PRODUCTS=("oss" "headless" "experience" "commerce")
 [[ -z "$PHP_VERSION" ]] && PHP_VERSION="8.3"
 [[ -z "$DATABASE" ]] && DATABASE="mariadb"
 [[ -z "$DATABASE_VERSION" ]] && DATABASE_VERSION="10.11"
-[[ -z "$NODE_VERSION" ]] && NODE_VERSION="22"
+[[ -z "$NODE_VERSION" ]] && NODE_VERSION="24"
 [[ -z "$HTTP_CACHE" ]] && HTTP_CACHE="symfony"
 [[ -z "$HTTP_SERVER" ]] && HTTP_SERVER="nginx-fpm"
 [[ -z "$APP_CACHE" ]] && APP_CACHE="filesystem"
@@ -177,8 +177,13 @@ function configure_node() {
     if [[ "$PRODUCT_VERSION" =~ ^(~|v)?6\.0\. ]]; then
         NODE_VERSION="24"
         return
-    elif [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
+    elif [[ "$PRODUCT_VERSION" =~ ^(v)?5\.0\.([0-9]|10)$ ]]; then
+        # 5.0.0 - 5.0.10 work with Node 22
         NODE_VERSION="22"
+        return
+    elif [[ "$PRODUCT_VERSION" =~ ^(~|v)?5\.0\. ]]; then
+        # From 5.0.11 on Node 24 is required (also covers ~5.0.0 and ~5.0.x-dev)
+        NODE_VERSION="24"
         return
     else
         choose_delimited "`(faint "[Environment]")` `(bold "Select Node version")`" "$NODE_VERSION" "22 (recommended):22" "18:18" "20:20"
