@@ -6,7 +6,7 @@ https://github.com/user-attachments/assets/ff9447a4-ed33-4cb1-a524-e0c79c5acb9d
 * [What is DDEV Ibexa DXP Installer?](#what-is-ddev-ibexa-dxp-installer)
 * [Additional Features](#additional-features)
 * [Requirements](#requirements)
-* [Preparation](#reparation)
+* [Preparation](#preparation)
 * [Finally: Create Project](#finally-create-project)
 * [PHP 8.6 (experimental)](#php-86-experimental)
 
