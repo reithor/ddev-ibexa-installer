@@ -92,7 +92,7 @@ ddev dotenv set .ddev/.env --dxp-release="$PRODUCT_VERSION"
 verbose_output ddev dotenv set .env.local --app-secret=$(openssl rand -hex 32)
 
 if [[ "$DATABASE" == "mariadb" ]]; then
-    DB_VERSION=mariadb-`ddev exec -s db mysql -V | awk '{print $5}' | sed 's/,$//'`
+    DB_VERSION=mariadb-`ddev exec -s db mysql -V | grep -oE '[0-9]+(\.[0-9]+)*-MariaDB'`
 fi
 
 if [[ "$DATABASE" == "postgres" ]]; then
